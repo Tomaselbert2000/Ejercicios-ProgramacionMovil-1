@@ -76,12 +76,12 @@ class ClaseDeTest {
         this.compraTicket1 = CompraTicket(
             id = 1,
             userId = this.usuario1.id,
-            ticketCollection = mutableListOf(this.ticket1.id, this.ticket2.id),
+            ticketCollection = mutableListOf(this.ticket1.id)
         )
         this.compraTicket2 = CompraTicket(
             id = 1,
             userId = this.usuario1.id,
-            ticketCollection = mutableListOf(this.ticket1.id, this.ticket2.id),
+            ticketCollection = mutableListOf(this.ticket1.id, this.ticket2.id)
         )
     }
 
@@ -167,7 +167,6 @@ class ClaseDeTest {
 
         val compra1Registrada = this.gestor.registrarCompraTicket(
             this.compraTicket1,
-            this.gestor.buscarUsuario(this.compraTicket1.userId),
             this.gestor.buscarEvento(this.ticket1.eventId),
             this.ticket1.quantity,
             this.ticket1.quantity*this.ticket1.precio
@@ -175,7 +174,6 @@ class ClaseDeTest {
 
         val compra2Registrada = this.gestor.registrarCompraTicket(
             this.compraTicket2,
-            this.gestor.buscarUsuario(this.compraTicket1.userId),
             this.gestor.buscarEvento(this.ticket1.eventId),
             this.ticket1.quantity,
             this.ticket1.quantity*this.ticket1.precio
@@ -215,7 +213,7 @@ class ClaseDeTest {
     }
 
     @Test
-    fun dadoQueExisteUnGestorYUnEventoRegistradoCon3AsientosSiSeIntentanComprar3AsientosObtengoFalse(){
+    fun dadoQueExisteUnGestorYUnEventoRegistradoCon3AsientosSiSeIntentanComprar5AsientosObtengoFalse(){
         this.gestor.registrarEvento(this.evento1)
 
         // al igual que en el test anterior, tenemos que probar un caso limite, usamos un setter para los asientos y otro para el quantity en el ticket
@@ -230,6 +228,54 @@ class ClaseDeTest {
     }
 
     @Test
+    fun dadoQueExisteUnGestorSiSeRealizaUnaTransaccionObtengoTrue(){
+        this.gestor.registrarUsuario(this.usuario1)
+        this.gestor.registrarEvento(this.evento1)
+        this.gestor.registrarTicket(this.ticket1)
+
+        val transaccionCorrecta = this.gestor.realizarTransaccion(this.usuario1, this.evento1, this.ticket1.quantity, this.ticket1.quantity*this.ticket1.precio)
+        val cantidadAsientosEsperada = 97
+        val cantidadAsientosObtenida = this.gestor.buscarEvento(this.evento1.eventId).availableSeats
+        val saldoActualizadoEsperado = 225500.0
+        val saldoActualizadoObtenido = this.gestor.buscarUsuario(this.usuario1.id).money
+
+        assertTrue(transaccionCorrecta)
+        assertEquals(cantidadAsientosEsperada, cantidadAsientosObtenida)
+        assertEquals(saldoActualizadoEsperado, saldoActualizadoObtenido)
+    }
+
+    @Test
+    fun dadoQueExisteUnGestorSiSeIntentaRealizarUnaCompraSinSaldoSuficienteObtengoFalse(){
+        this.usuario1.money = 5500.0
+        this.gestor.registrarUsuario(this.usuario1)
+        this.gestor.registrarEvento(this.evento1)
+        this.gestor.registrarTicket(this.ticket1)
+
+        val transaccionCorrecta = this.gestor.realizarTransaccion(this.usuario1, this.evento1, this.ticket1.quantity, this.ticket1.quantity*this.ticket1.precio)
+        val cantidadAsientosEsperada = 100
+        val cantidadAsientosObtenida = this.gestor.buscarEvento(this.evento1.eventId).availableSeats
+        val saldoActualizadoEsperado = 5500.0
+        val saldoActualizadoObtenido = this.gestor.buscarUsuario(this.usuario1.id).money
+        assertFalse(transaccionCorrecta)
+        assertEquals(cantidadAsientosEsperada, cantidadAsientosObtenida)
+        assertEquals(saldoActualizadoEsperado, saldoActualizadoObtenido)
+    }
+
+    @Test
+    fun dadoQueExisteUnEventoSinAsientosDisponiblesSiIntentoComprarLaTransaccionRetornaFalse(){
+
+        this.evento1.availableSeats = 0 // a efectos de probar este caso de borde, con el setter ponemos la cantidad de asientos en 0
+
+        // registramos en el sistema todos los datos necesarios
+        this.gestor.registrarUsuario(this.usuario1)
+        this.gestor.registrarEvento(this.evento1)
+        this.gestor.registrarTicket(this.ticket1)
+        // aca pasamos a simular la compra
+        this.gestor.registrarCompraTicket(this.compraTicket1, this.gestor.buscarEvento(this.evento1.eventId), this.ticket1.quantity, this.ticket1.quantity*this.ticket1.precio)
+
+    }
+
+    @Test
     fun dadoQueExisteUnGestorDeEntradasSiUnUsuarioRealizaUnaCompraObtengoTrue(){
         this.gestor.registrarEvento(this.evento1) // registramos primero el evento
         this.gestor.registrarUsuario(this.usuario1) // registramos el usuario que va a comprar
@@ -237,10 +283,11 @@ class ClaseDeTest {
 
         val seRegistroLaCompra = this.gestor.registrarCompraTicket(
             this.compraTicket1,
-            this.gestor.buscarUsuario(this.compraTicket1.userId),
             this.gestor.buscarEvento(this.ticket1.eventId),
             this.ticket1.quantity,
-            this.ticket1.quantity*this.ticket1.precio)
+            this.compraTicket1.ticketCollection.size * this.ticket1.precio)
+
+        this.gestor.realizarTransaccion(this.usuario1, this.evento1, this.ticket1.quantity, this.ticket1.quantity*this.ticket1.precio)
         assertTrue(seRegistroLaCompra)
     }
 
@@ -252,10 +299,9 @@ class ClaseDeTest {
 
         this.gestor.registrarCompraTicket(
             this.compraTicket1,
-            this.gestor.buscarUsuario(this.compraTicket1.userId),
             this.gestor.buscarEvento(this.ticket1.eventId),
             this.ticket1.quantity,
-            this.ticket1.quantity*this.ticket1.precio
+            this.compraTicket1.ticketCollection.size * this.ticket1.precio
             )
 
         val asientosEvento1Esperado = 97
@@ -263,13 +309,51 @@ class ClaseDeTest {
         assertEquals(asientosEvento1Esperado, asientosEvento1Obtenido)
     }
 
-    /*@Test
+    @Test
     fun dadoQueExisteUnGestorYUnUsuarioRegistradoObtengoTodasLasTransaccionesDelUsuario(){
 
+        // registramos todos los datos
         this.gestor.registrarUsuario(this.usuario1)
         this.gestor.registrarEvento(this.evento1)
         this.gestor.registrarTicket(this.ticket1)
 
-        this.gestor.registrarCompraTicket(this.compraTicket1, this.gestor.buscarUsuario(this.usuario1.id), this.evento1)
-    }*/
+        // aca armamos el contenido de la compra en si
+        this.gestor.registrarCompraTicket(
+            compraTicket = this.compraTicket1,
+            evento = this.gestor.buscarEvento(this.evento1.eventId),
+            quantity = this.ticket1.quantity,
+            precioTotal = this.compraTicket1.ticketCollection.size * this.ticket1.precio,
+        )
+
+        val registroDeComprasDelUsuario = this.gestor.obtenerHistorialDeCompras(this.gestor.buscarUsuario(this.compraTicket1.userId))
+        val cantidadComprasEsperada = 1
+        val cantidadComprasObtenida = registroDeComprasDelUsuario.size
+        assertEquals(cantidadComprasEsperada, cantidadComprasObtenida)
+    }
+
+    @Test
+    fun dadoQueExisteUnGestorConUnUsuarioObtengoQueComproUnTicket(){
+        // registramos todos los datos
+        this.gestor.registrarUsuario(this.usuario1)
+        this.gestor.registrarEvento(this.evento1)
+        this.gestor.registrarTicket(this.ticket1)
+
+        // aca armamos el contenido de la compra en si
+        this.gestor.registrarCompraTicket(
+            /*
+            En la instancia de registro de compra compraTicket1 tenemos asociada una mutableList<Long> que tiene un solo elemento
+            Esto indica que de validarse la compra, el size de la lista que queremos buscar tiene que tener ese tamaño
+             */
+
+            compraTicket = this.compraTicket1,
+            evento = this.gestor.buscarEvento(this.evento1.eventId),
+            quantity = this.ticket1.quantity,
+            precioTotal = this.compraTicket1.ticketCollection.size * this.ticket1.precio,
+        )
+
+        val listaDeTicketsAsociadosAlUsuario = this.gestor.obtenerListaDeTicketsAsociados(this.gestor.buscarUsuario(this.compraTicket1.userId))
+        val cantidadEsperada = 1 // esto hace referencia a la CANTIDAD DE IDs de tickets, no al ID en si
+        val cantidadObtenida = listaDeTicketsAsociadosAlUsuario.size
+        assertEquals(cantidadEsperada, cantidadObtenida) // validamos aca que sean iguales
+    }
 }

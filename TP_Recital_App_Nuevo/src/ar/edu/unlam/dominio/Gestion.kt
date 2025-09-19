@@ -22,13 +22,7 @@ class Gestion(){
     }
 
     fun registrarCompraTicket(
-
-        compraTicket: CompraTicket, // esta instancia es la que tiene el registro de la compra en si
-        usuario: Usuario, // el id del usuario que hace la compra
-        evento: Evento, // el id del evento que se quiere adquirir
-        quantity: Int, // la cantidad de asientos que se quieren comprar
-        precioTotal: Double // el monto obtenido de multiplicar el precio del asiento por la cantidad
-
+        compraTicket: CompraTicket, evento: Evento, quantity: Int, precioTotal: Double
     ) : Boolean{
         val listaSinDuplicados = compraTicket.ticketCollection.distinct()
 
@@ -45,22 +39,32 @@ class Gestion(){
         misma instancia de compra.
          */
 
-        if(listaSinDuplicados.size == compraTicket.ticketCollection.size && this.verificarSaldoSuficiente(usuario.money, precioTotal)){
-
-            this.actualizarAsientosDisponibles(evento, quantity) // buscamos el evento y actualizamos los asientos
-            this.actualizarSaldo(usuario, precioTotal) // buscamos el usuario y actualizamos el saldo
+        if(listaSinDuplicados.size == compraTicket.ticketCollection.size && this.verificarRequisitosDeCompra(this.buscarUsuario(compraTicket.userId), evento, quantity, precioTotal)){
+            this.realizarTransaccion(this.buscarUsuario(compraTicket.userId), evento, quantity, precioTotal)
             return this.listaComprasRealizadas.add(compraTicket)
-
         }
         return false
     }
 
-    private fun actualizarSaldo(usuario: Usuario, precioTotal: Double) {
+    fun realizarTransaccion(
+        usuario: Usuario,
+        evento: Evento,
+        quantity: Int,
+        precioTotal: Double
+    ) : Boolean{
+        return this.verificarSaldoSuficiente(usuario.money, precioTotal)
+                && this.actualizarAsientosDisponibles(evento, quantity)
+                && this.actualizarSaldo(usuario, precioTotal)
+    }
+
+    fun actualizarSaldo(usuario: Usuario, precioTotal: Double) : Boolean{
         for (user in this.listaUsuario){
             if (user == usuario) {
                 user.money -= precioTotal
+                return true
             }
         }
+        return false
     }
 
     fun iniciarSesion(nickname: String, password: String) : Boolean{
@@ -77,12 +81,14 @@ class Gestion(){
         return this.listaUsuario.find { it.nickname == nickname }?.password == password
     }
 
-    fun actualizarAsientosDisponibles(evento: Evento, quantity: Int) {
+    fun actualizarAsientosDisponibles(evento: Evento, quantity: Int) : Boolean{
         for (e in this.listaEventos){
             if (e == evento){
                 e.availableSeats -= quantity
+                return true
             }
         }
+        return false
     }
 
     fun buscarEvento(eventId: Long): Evento {
@@ -103,5 +109,33 @@ class Gestion(){
 
     fun buscarTicket(id: Long): Ticket? {
         return this.listaTicket.find { it.id == id }
+    }
+
+    // para hacer que el metodo que valida las compras sea mas corto, separamos responsabilidades entre varias funciones mas simples
+
+    fun verificarRequisitosDeCompra(usuario: Usuario, evento: Evento, quantity: Int, precioTotal: Double) : Boolean {
+        return this.verificarSaldoSuficiente(usuario.money, precioTotal) && this.verificarAsientosSuficientes(evento.availableSeats, quantity)
+    }
+
+    fun obtenerHistorialDeCompras(usuario: Usuario): MutableList<CompraTicket> {
+        val historialDeCompras = mutableListOf<CompraTicket>()
+        for(compra in this.listaComprasRealizadas){
+            if(compra.userId == usuario.id){
+                historialDeCompras.add(compra)
+            }
+        }
+        return historialDeCompras
+    }
+
+    fun obtenerListaDeTicketsAsociados(usuario: Usuario): MutableList<Long> {
+        val listaDeTicketsAsociadosAlUsuario = mutableListOf<Long>()
+        for (compra in this.listaComprasRealizadas){
+            if (compra.userId == usuario.id){
+                for (item in compra.ticketCollection){
+                    listaDeTicketsAsociadosAlUsuario.add(item)
+                }
+            }
+        }
+        return listaDeTicketsAsociadosAlUsuario
     }
 }

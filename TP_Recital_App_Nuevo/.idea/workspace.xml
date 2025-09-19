@@ -17,9 +17,9 @@
       </list>
     </option>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="32sTLIu6dcAx3UlbDGIdpb9snB1" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -28,36 +28,25 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Downloaded.Files.Path.Enabled": "false",
+    "JUnit.ClaseDeTest.dadoQueExisteUnGestorConUnUsuarioObtengoTodosLosTicketsQueAdquirio.executor": "Run",
     "JUnit.ClaseDeTest.dadoQueExisteUnGestorDeEntradasSiSeRegistranDosComprasIgualesALa2daNoLaRegistra.executor": "Run",
+    "JUnit.ClaseDeTest.dadoQueExisteUnGestorSiSeIntentaRealizarUnaCompraSinSaldoObtengoFalse.executor": "Run",
+    "JUnit.ClaseDeTest.dadoQueExisteUnGestorSiSeIntentaRealizarUnaCompraSinSaldoSuficienteObtengoFalse.executor": "Run",
+    "JUnit.ClaseDeTest.dadoQueExisteUnGestorYUnUsuarioRegistradoObtengoTodasLasTransaccionesDelUsuario.executor": "Run",
+    "JUnit.ClaseDeTest.dadoQueExisteUnUsuarioRegistradoConUnSaldoDe5500eIntentaComprarUnaEntradaQueVale10000ObtengoFalse.executor": "Run",
     "JUnit.ClaseDeTest.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Repository.Attach.Annotations": "false",
     "Repository.Attach.JavaDocs": "false",
     "Repository.Attach.Sources": "false",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "deletionFromPopupRequiresConfirmation": "false",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "settings.editor.selected.configurable": "Errors",
     "settings.editor.splitter.proportion": "0.2324159"
   }
 }]]></component>
-  <component name="RunManager">
-    <configuration name="ClaseDeTest.dadoQueExisteUnGestorDeEntradasSiSeRegistranDosComprasIgualesALa2daNoLaRegistra" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="TP_Recital_App_Nuevo" />
-      <option name="PACKAGE_NAME" value="ar.edu.unlam.dominio" />
-      <option name="MAIN_CLASS_NAME" value="ar.edu.unlam.dominio.ClaseDeTest" />
-      <option name="METHOD_NAME" value="dadoQueExisteUnGestorDeEntradasSiSeRegistranDosComprasIgualesALa2daNoLaRegistra" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="JUnit.ClaseDeTest.dadoQueExisteUnGestorDeEntradasSiSeRegistranDosComprasIgualesALa2daNoLaRegistra" />
-      </list>
-    </recent_temporary>
-  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="16b9c3a3-e926-4760-8a62-f105efcaa04f" name="Changes" comment="" />
