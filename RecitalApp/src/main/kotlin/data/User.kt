@@ -9,5 +9,20 @@ data class User(
     val money: Double,
     val createdDate: String
 ){
+    var estadoDeBloqueoDeUsuario: Boolean = false // este valor por defecto es false, si el usuario acumula 3 intentos fallidos de sesion se bloquea
+    var estadoDeSesion: Boolean = false // por default un usuario al registrarse en el sistema debe iniciar sesion, su estado inicial siempre es false
+    var cantidadIniciosDeSesionFallidos: Int = 0 // dado que este valor debe poder incrementarse, lo declaramos como var
+
+    fun obtenerCantidadIniciosSesionFallidos(): Int {
+        return this.cantidadIniciosDeSesionFallidos
+    }
+
+    fun obtenerEstadoDeSesion(): Boolean {
+        return this.estadoDeSesion
+    }
+
+    fun obtenerEstadoDeBloqueoDeUsuario(): Boolean {
+        return this.estadoDeBloqueoDeUsuario
+    }
 
 }

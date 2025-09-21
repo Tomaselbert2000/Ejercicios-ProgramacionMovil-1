@@ -88,7 +88,8 @@ object EventRepository {
     fun registrarNuevoEvento(evento: Event) : Boolean{
         return !this.seSuperponeAOtro(evento)
                 && this.validarId(evento)
-                && !this.esDuplicado(evento) && this.events.add(evento)
+                && !this.esDuplicado(evento)
+                && this.events.add(evento)
     }
 
     private fun validarId(evento: Event): Boolean {

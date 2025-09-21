@@ -560,6 +560,14 @@ object TicketsRepository {
                 && tickets.add(nuevoTicket)
     }
 
+    fun obtenerListaDeIDsDeTickets(): MutableList<Long> {
+        val listaDeIDsDeTicketsRegistrados = mutableListOf<Long>()
+        for (ticket in this.tickets){
+            listaDeIDsDeTicketsRegistrados.add(ticket.id)
+        }
+        return listaDeIDsDeTicketsRegistrados
+    }
+
     private fun validarEventoAsociado(nuevoTicket: Ticket, listaDeIDsEventosRegistrados: MutableList<Long>): Boolean {
         for (id in listaDeIDsEventosRegistrados){
             if (nuevoTicket.eventId == id){

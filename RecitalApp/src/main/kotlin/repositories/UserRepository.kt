@@ -16,6 +16,23 @@ object UserRepository {
         return null
     }
 
+    fun iniciarSesion(nickname: String, password: String): Boolean {
+        for(usr in users){
+            if (usr.nickname == nickname) {
+                if (usr.password == password) {
+                    usr.estadoDeSesion = true
+                    return true
+                }else
+                    usr.cantidadIniciosDeSesionFallidos ++
+                    if(usr.cantidadIniciosDeSesionFallidos == 3){
+                        usr.estadoDeBloqueoDeUsuario = true
+                    }
+            }
+        }
+
+        return false
+    }
+
     fun registrarNuevoUsuario(usuarioNuevo: User): Boolean{
         return this.validarId(usuarioNuevo) &&
                 !this.estaDuplicado(usuarioNuevo) &&
@@ -54,15 +71,13 @@ object UserRepository {
         return users.find { it.id == idBuscado } != null
     }
 
-    // dado que el repositorio de usuarios es de tipo Object, no podemos tener mas que una sola instancia
-    // lo cual lleva a posibles errores o inconsistencias al momento de correr sus respectivos tests
-    // con este metodo reiniciamos la instancia desde dentro para poder testear correctamente
-
-    fun reiniciarInstancia() {
-        users.clear()
-        users.add(User(1504L, "MARTIN_ALBANESI", "abc4321", "Martin", "Albanesi", 3500000.50, "2024/05/13"))
-        users.add(User(2802L, "Fran25", "contraseña123", "Franco German", "Mazafra", 200000.50, "2021/01/20"))
-        users.add(User(1510L, "jonaURAN", "@12345", "Jonatan", "Uran", 120000.0, "2018/04/15"))
+    fun buscarUsuarioPorNickname(nicknameParaBuscar: String): User? {
+        for(user in users){
+            if(user.nickname == nicknameParaBuscar){
+                return user
+            }
+        }
+        return null
     }
 
     fun obtenerListaUsuariosFiltradosPorSaldo(saldoMinimo: Double, saldoMaximo: Double): MutableList<User> {
@@ -73,5 +88,24 @@ object UserRepository {
             }
         }
         return listaDeUsuariosFiltradosPorSaldo
+    }
+
+    fun obtenerListaDeIDsDeUsuarios(): MutableList<Long> {
+        val listaDeIDsRegistrados = mutableListOf<Long>()
+        for (user in this.users){
+            listaDeIDsRegistrados.add(user.id)
+        }
+        return listaDeIDsRegistrados
+    }
+
+    // dado que el repositorio de usuarios es de tipo Object, no podemos tener mas que una sola instancia
+    // lo cual lleva a posibles errores o inconsistencias al momento de correr sus respectivos tests
+    // con este metodo reiniciamos la instancia desde dentro para poder testear correctamente
+
+    fun reiniciarInstancia() {
+        users.clear()
+        users.add(User(1504L, "MARTIN_ALBANESI", "abc4321", "Martin", "Albanesi", 3500000.50, "2024/05/13"))
+        users.add(User(2802L, "Fran25", "contraseña123", "Franco German", "Mazafra", 200000.50, "2021/01/20"))
+        users.add(User(1510L, "jonaURAN", "@12345", "Jonatan", "Uran", 120000.0, "2018/04/15"))
     }
 }

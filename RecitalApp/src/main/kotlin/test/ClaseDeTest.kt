@@ -2,12 +2,15 @@ package main.kotlin.test
 
 import main.kotlin.data.Event
 import main.kotlin.data.Ticket
+import main.kotlin.data.TicketCollection
 import main.kotlin.data.User
 import main.kotlin.repositories.EventRepository
+import main.kotlin.repositories.TicketCollectionRepository
 import main.kotlin.repositories.TicketsRepository
 import main.kotlin.repositories.UserRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -20,9 +23,12 @@ class ClaseDeTest {
     lateinit var repoUsuarios : UserRepository
     lateinit var repoEventos : EventRepository
     lateinit var repoTickets : TicketsRepository
+    lateinit var repoTicketsCollection: TicketCollectionRepository
 
-    @Before
+    @Before // este metodo se ejecuta antes de comenzar cada test para proporcionar un escenario de pruebas apropiado
     fun inicializarObjetos(){
+
+        // luego de cada prueba, los repositorios se reinician para permitir la siguiente (solo podemos tener una instancia de cada uno de ellos)
         this.repoUsuarios = UserRepository
         this.repoUsuarios.reiniciarInstancia()
 
@@ -31,6 +37,9 @@ class ClaseDeTest {
 
         this.repoTickets= TicketsRepository
         this.repoTickets.reiniciarInstancia()
+
+        this.repoTicketsCollection = TicketCollectionRepository
+        this.repoTicketsCollection.reiniciarInstancia()
     }
 
     // +--- Funciones de test para la clase UserRepository ---+
@@ -119,6 +128,14 @@ class ClaseDeTest {
         val idBuscado = 180L
         val usuarioEncontrado = this.repoUsuarios.buscarUsuarioPorID(idBuscado)
         assertFalse(usuarioEncontrado)
+    }
+
+    @Test
+    // con este test validamos que el sistema puede buscar entre todos los usuarios y devolver uno en especifico
+    fun dadoQueExisteUnRepoDeUsuariosSiBuscoPorElNicknameMARTIN_ALBANESIobtengoUnUsuarioNoNulo(){
+        val nicknameParaBuscar = "MARTIN_ALBANESI"
+        val fueEncontradoEnElSistema = this.repoUsuarios.buscarUsuarioPorNickname(nicknameParaBuscar)
+        assertNotNull(fueEncontradoEnElSistema)
     }
 
     @Test
@@ -292,5 +309,165 @@ class ClaseDeTest {
         // aca el metodo va a buscar entre los eventos si hubiese discrepancias
         val fueRegistrado = this.repoTickets.registrarNuevoTicket(ticketSinEventoAsociado, rangoDeEventosDisponibles)
         assertFalse(fueRegistrado) // y termina rechazando el objeto aca
+    }
+
+    // +--- Funciones de test para la clase TicketCollectionRepository ---+
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesDeTicketsSiRegistroUnNuevoObjetoObtengoTrue(){
+        val nuevaColeccion = TicketCollection(5L, 1510L, mutableListOf(2L, 4L, 6L, 8L)) // aca creamos lo que seria un nuevo registro de una compra de tickets
+        val fueRegistrado = this.repoTicketsCollection.registrarNuevaColeccion(
+            nuevaColeccion,
+            this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        )
+        assertTrue(fueRegistrado)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesSiRegistroDosVecesElMismoObjetoAl2doObtengoFalse(){
+        val coleccionRepetida = TicketCollection(5L, 1510L, mutableListOf(2L, 4L, 6L, 8L)) // aca vamos a intentar guardar dos veces esto en el sistema
+        val fueRegistradoLaPrimeraVez = this.repoTicketsCollection.registrarNuevaColeccion(
+            coleccionRepetida,
+            this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        )
+        val fueRegistradoLaSegundaVez = this.repoTicketsCollection.registrarNuevaColeccion(
+            coleccionRepetida,
+            this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        )
+
+        // y aca vemos que el primero pasa y el 2do no
+        assertTrue(fueRegistradoLaPrimeraVez)
+        assertFalse(fueRegistradoLaSegundaVez) // al ser la misma instancia en memoria, el sistema no permite guardar el repetido y rechaza
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesDeTicketsSiIngresoDosObjetosConMismoIdAl2doObtengoFalse(){
+        // validamos que no se guarden colecciones diferentes con el mismo identificador por mas que tengan datos distintos
+        val coleccion = TicketCollection(5L, 1504L, mutableListOf(1L, 3L, 6L, 8L))
+        val coleccionConIdRepetido = TicketCollection(5L, 2802L, mutableListOf(2L, 4L, 6L, 8L))
+
+        val seRegistroLaPrimera = this.repoTicketsCollection.registrarNuevaColeccion(
+            coleccion,
+            this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        )
+        val seRegistroLaSegunda = this.repoTicketsCollection.registrarNuevaColeccion(
+            coleccionConIdRepetido,
+            this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        )
+
+        assertTrue(seRegistroLaPrimera)
+        assertFalse(seRegistroLaSegunda)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesSiIngresoUnObjetoConIdNegativoObtengoFalse(){
+        // vamos a validar que el sistema no deje pasar ids con valores negativos
+        val coleccionConIdNegativo = TicketCollection(-1L, 1510L, mutableListOf(1L, 4L, 6L, 8L))
+        val fueRegistrado = this.repoTicketsCollection.registrarNuevaColeccion(
+            coleccionConIdNegativo,
+            this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        ) // intentamos guardarlo en el repo
+        assertFalse(fueRegistrado) // al momento de verificar que el ID es negativo el sistema rechaza el objeto y retorna false
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesSiIntentoGuardarUnObjetoConUserIdQueNoExisteObtengoFalse(){
+        // para este test vamos a validar que el sistema chequea los IDs de usuarios existentes para no permitir guardar una coleccion enlazada a un user que no existe
+
+        // al momento de inicializar el repo de usuarios, solo contamos con los siguientes IDs: 1510L, 1504L y 2802L
+        // por lo tanto, el sistema debe validar que el parametro del userId en la coleccion nueva si se corresponde con alguno de los IDs de usuario ya registrados
+
+        val coleccionConUserIdInexistente = TicketCollection(5L, 10L, mutableListOf(1L, 4L, 6L, 8L)) // pasamos al constructor un ID que falle
+
+        // para poder obtener los IDs ya existentes, la capa de usuarios debe informar a la capa de colecciones
+        // igual a como hicimos con la clase de eventos y tickets, es necesario un parámetro más el cual será una lista mutable de tipo Long
+
+        // a partir de este test, se agregan en todos los anteriores el parametro con la lista de IDs para evitar errores de compilacion
+        val listaDeIDsRegistrados = this.repoUsuarios.obtenerListaDeIDsDeUsuarios()
+        val fueRegistrado = this.repoTicketsCollection.registrarNuevaColeccion(
+            coleccionConUserIdInexistente,
+            listaDeIDsRegistrados,
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        )
+        assertFalse(fueRegistrado)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesSiIntentoGuardarUnaColeccionConUnIdDeTicketInexistenteObtengoFalse(){
+        // para este test simulamos que si se intenta crear un objeto que dentro de la lista de IDs de tickets asociados tenga uno que no existe
+        // es decir, validamos que dentro de la coleccion solo haya IDs de tickets que ya existen en el sistema
+
+        // al inicializa el repo de tickets, el id de ticket mas alto es 30L
+        val coleccionConNumeroDeTicketInexistente = TicketCollection(5L, 1510L, mutableListOf(1L, 4L, 6L, 31L))
+
+        // para que la capa de colecciones sepa cuales IDs estan registrados, es necesario darle como parametro la lista al momento de intentar registrar un objeto
+        val fueAgregado = this.repoTicketsCollection.registrarNuevaColeccion(
+            coleccionConNumeroDeTicketInexistente,
+            this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            this.repoTickets.obtenerListaDeIDsDeTickets()) // aca agregamos el nuevo parametro
+
+        assertFalse(fueAgregado) // como la lista de IDs de tickets contiene 31L, nos aseguramos que el sistema no registra este objeto de manera erronea
+    }
+
+    // +--- Funciones de test para la interaccion entre el usuario y el sistema ---+
+
+    @Test
+    fun dadoQueExisteUnUsuarioRegistradoSiIngresoComoMARTIN_ALBANESIabc4321ObtengoTrue(){
+        // probamos que dado un nickname y contraseña correctos, el sistema valida que existe tal usuario y retorna true
+        val nickname = "MARTIN_ALBANESI"
+        val password = "abc4321"
+        val sesionIniciada = this.repoUsuarios.iniciarSesion(nickname, password) // llamamos al metodo y le pasamos los datos aca
+        assertTrue(sesionIniciada)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeUsuariosSiIntentoIngresarConUnNicknameQueNoExisteObtengoFalse(){
+        val nicknameQueNoExiste = "qwerty"
+        val passwordQueSiExiste = "abc4321"
+        val sesionIniciada = this.repoUsuarios.iniciarSesion(nicknameQueNoExiste, passwordQueSiExiste)
+        assertFalse(sesionIniciada)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeUsuariosSiFalloAlIngresarLaPasswordElContadorDeFallosDelUsuarioAumentaEnUno(){
+        val nickname = "MARTIN_ALBANESI" // tenemos un nickname que funciona correctamente
+        val password = "abc1234" // y aca una contraseña incorrecta para ese usuario
+        this.repoUsuarios.iniciarSesion(nickname, password) // probamos iniciar sesion con estas credenciales, esto no tiene que funcionar
+        val cantidadDeIntentosFallidosEsperada = 1 // esperamos que la cantidad de inicios de sesion fallidos se incremente en 1 luego de la linea anterior
+        val cantidadDeIntenosFallidosObtenida = this.repoUsuarios.buscarUsuarioPorNickname(nickname)?.obtenerCantidadIniciosSesionFallidos() // obtenemos la cantidad de intentos
+        assertEquals(cantidadDeIntentosFallidosEsperada, cantidadDeIntenosFallidosObtenida) // comparamos aca y obtenemos que efectivamente aumenta en 1 por cada inicio de sesion fallido
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeUsuariosConUnUsuarioRegistradoSiInicioSesionComoMARTIN_ALBANESIObtengoQueSuEstadoDeSesionEsTrue(){
+        val nickname = "MARTIN_ALBANESI"
+        val password = "abc4321"
+        this.repoUsuarios.iniciarSesion(nickname, password) // pasamos el user y la password, esto genera que el usuario inicie sesion correctamente
+        val estadoDeSesionEsperado = true // esperamos que de iniciar sesion, el estado sea true
+        val estadoDeSesionObtenido = this.repoUsuarios.buscarUsuarioPorNickname("MARTIN_ALBANESI")?.obtenerEstadoDeSesion() // preguntamos el estado al objeto
+        assertEquals(estadoDeSesionEsperado, estadoDeSesionObtenido) // validamos que da true y el test funciona
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeUsuariosSiIntentoIniciarSesion3VecesIncorrectamenteObtengoQueElUsuarioEstáBloqueado(){
+        val nickname = "MARTIN_ALBANESI" // tenemos un nickname que si existe
+        val password = "abc1234" // aca tenemos una contraseña incorrecta para ese user
+
+        // iniciamos sesion 3 veces seguidas con una password incorrecta
+        this.repoUsuarios.iniciarSesion(nickname, password)
+        this.repoUsuarios.iniciarSesion(nickname, password)
+        this.repoUsuarios.iniciarSesion(nickname, password)
+
+        // y ahora vamos a preguntarle al repo de usuarios si el user con el nickname dado esta bloqueado o no
+        val estadoDeBloqueoDeUsuarioEsperado = true // esperamos que luego de 3 intentos el sistema bloquee al usuario
+        val estadoDeBloqueoDeUsuarioObtenido = this.repoUsuarios.buscarUsuarioPorNickname(nickname)?.obtenerEstadoDeBloqueoDeUsuario() // aca le preguntamos al objeto su valor
+
+        assertEquals(estadoDeBloqueoDeUsuarioEsperado, estadoDeBloqueoDeUsuarioObtenido) // y finalmente obtenemos que si es true y el test pasa correctamente
     }
 }
