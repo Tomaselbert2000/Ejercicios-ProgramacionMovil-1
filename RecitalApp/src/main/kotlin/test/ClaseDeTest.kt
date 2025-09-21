@@ -1,10 +1,12 @@
 package main.kotlin.test
 
 import main.kotlin.data.Event
+import main.kotlin.data.PaymentMethod
 import main.kotlin.data.Ticket
 import main.kotlin.data.TicketCollection
 import main.kotlin.data.User
 import main.kotlin.repositories.EventRepository
+import main.kotlin.repositories.PaymentMethodRepository
 import main.kotlin.repositories.TicketCollectionRepository
 import main.kotlin.repositories.TicketsRepository
 import main.kotlin.repositories.UserRepository
@@ -24,6 +26,7 @@ class ClaseDeTest {
     lateinit var repoEventos : EventRepository
     lateinit var repoTickets : TicketsRepository
     lateinit var repoTicketsCollection: TicketCollectionRepository
+    lateinit var repoMediosDePago : PaymentMethodRepository
 
     @Before // este metodo se ejecuta antes de comenzar cada test para proporcionar un escenario de pruebas apropiado
     fun inicializarObjetos(){
@@ -40,6 +43,9 @@ class ClaseDeTest {
 
         this.repoTicketsCollection = TicketCollectionRepository
         this.repoTicketsCollection.reiniciarInstancia()
+
+        this.repoMediosDePago = PaymentMethodRepository
+        this.repoMediosDePago.reiniciarInstancia()
     }
 
     // +--- Funciones de test para la clase UserRepository ---+
@@ -415,6 +421,68 @@ class ClaseDeTest {
         assertFalse(fueAgregado) // como la lista de IDs de tickets contiene 31L, nos aseguramos que el sistema no registra este objeto de manera erronea
     }
 
+    // +--- Funciones de test para la clase PaymentMethodRepository ---+
+
+    @Test
+    fun dadoQueExisteUnRepoDeMediosDePagoSiRegistroUnoNuevoObtengoTrue(){
+        val nuevoMedioDePago = PaymentMethod(4L, "American Express", 0.025)
+        val fueRegistrado = this.repoMediosDePago.registrarNuevoMedioDePago(nuevoMedioDePago)
+        assertTrue(fueRegistrado)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeMediosDePagoSiIntentoRegistrarDosVecesElMismoObjetoAl2doIntentoObtengoFalse(){
+        // probamos que el sistema no registra medio de pagos repetidos, es decir, no guarda dos veces la misma instancia
+        val medioDePagoRepetido = PaymentMethod(4L, "American Express", 0.025)
+        val fueRegistradoLaPrimeraVez = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePagoRepetido)
+        val fueRegistradoLa2daVez = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePagoRepetido)
+
+        assertTrue(fueRegistradoLaPrimeraVez)
+        assertFalse(fueRegistradoLa2daVez)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeMediosDePagoSiIntentoRegistrarDosMediosConElMismoIdAl2doObtengoFalse(){
+        // creamos dos objetos con el mismo ID y diferentes datos
+        val medioDePago = PaymentMethod(5L, "American Express", 0.025)
+        val medioDePagoRepetido = PaymentMethod(5L, "Efectivo", 0.0)
+
+        val seRegistroElPrimero = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePago)
+        val seRegistroEl2do = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePagoRepetido)
+
+        assertTrue(seRegistroElPrimero)
+        assertFalse(seRegistroEl2do)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeMediosDePagoSiIntentoRegistrarDosMediosConElMismoNombreAl2doObtengoFalse(){
+        // vamos a validar mediante este test que el sistema no registra dos medios de pago con distinto ID si tienen el mismo nombre
+        val medioDePago = PaymentMethod(4L, "American Express", 0.025)
+        val medioDePagoRepetido = PaymentMethod(5L, "American Express", 0.025)
+
+        val fueRegistradoElPrimero = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePago)
+        val fueRegistradoEl2do = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePagoRepetido)
+
+        assertTrue(fueRegistradoElPrimero)
+        assertFalse(fueRegistradoEl2do)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeMediosDePagoSiIntentoRegistrarUnMedioConIdNegativoObtengoFalse(){
+        // testeamos que el sistema no deja pasar IDs negativos al igual que los demas repositorios
+        val medioDePagoConIdNegativo = PaymentMethod(-1L, "American Express", 0.025)
+        val fueRegistrado = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePagoConIdNegativo)
+        assertFalse(fueRegistrado)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeMediosDePagoSiIntentoRegistrarUnMedioDePagoConComisionNegativaObtengoFalse(){
+        // el sistema tampoco debe registrar ningun medio de pago que se ingrese con un valor de comision negativo
+        val medioDePagoComisionNegativa = PaymentMethod(5L, "American Express", -0.025)
+        val fueRegistrado = this.repoMediosDePago.registrarNuevoMedioDePago(medioDePagoComisionNegativa)
+        assertFalse(fueRegistrado)
+    }
+
     // +--- Funciones de test para la interaccion entre el usuario y el sistema ---+
 
     @Test
@@ -455,7 +523,7 @@ class ClaseDeTest {
     }
 
     @Test
-    fun dadoQueExisteUnRepoDeUsuariosSiIntentoIniciarSesion3VecesIncorrectamenteObtengoQueElUsuarioEstáBloqueado(){
+    fun dadoQueExisteUnRepoDeUsuariosSiIntentoIniciarSesion3VecesIncorrectamenteObtengoQueElUsuarioEstaBloqueado(){
         val nickname = "MARTIN_ALBANESI" // tenemos un nickname que si existe
         val password = "abc1234" // aca tenemos una contraseña incorrecta para ese user
 
@@ -469,5 +537,17 @@ class ClaseDeTest {
         val estadoDeBloqueoDeUsuarioObtenido = this.repoUsuarios.buscarUsuarioPorNickname(nickname)?.obtenerEstadoDeBloqueoDeUsuario() // aca le preguntamos al objeto su valor
 
         assertEquals(estadoDeBloqueoDeUsuarioEsperado, estadoDeBloqueoDeUsuarioObtenido) // y finalmente obtenemos que si es true y el test pasa correctamente
+    }
+    
+    // +--- Funciones de test para la compra de tickets ---+
+
+    @Test
+    fun dadoQueExisteUnUsuarioSiRealizaUnaCompraDeUnAsientoObtengoQueSuSaldoDisminuyeEn10000(){
+        /*
+        Dado que el precio de cada entrada es 10000, debemos calcular el precio total
+        de la compra en base a este valor multiplicado por la cantidad de asientos que
+        se quieren reservar. Mas adelante testeamos como aplicar descuentos en base
+        a distintos metodos de pago
+         */
     }
 }
