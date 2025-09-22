@@ -6,7 +6,7 @@ data class User(
     val password: String,
     val name: String,
     val surname: String,
-    val money: Double,
+    var money: Double, // dado que el usuario puede comprar y cargar saldo, este valor debe tener la posibilidad de modificarse
     val createdDate: String
 ){
     var estadoDeBloqueoDeUsuario: Boolean = false // este valor por defecto es false, si el usuario acumula 3 intentos fallidos de sesion se bloquea
@@ -25,4 +25,13 @@ data class User(
         return this.estadoDeBloqueoDeUsuario
     }
 
+    fun obtenerSaldo(): Double {
+        return this.money
+    }
+
+    fun descontarMontoDeCompra(montoDeCompra: Double) {
+        if(montoDeCompra <= this.money){
+            this.money -= montoDeCompra
+        }
+    }
 }

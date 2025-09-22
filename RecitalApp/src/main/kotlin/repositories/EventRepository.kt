@@ -1,6 +1,9 @@
 package main.kotlin.repositories
 
 import main.kotlin.data.Event
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeParseException
 
 object EventRepository {
 
@@ -32,7 +35,7 @@ object EventRepository {
         events.add(
             Event(
                 3L,
-                "2021-07-30",
+                "2021-7-30",
                 "22:00",
                 "Estadio Velez Sarsfield",
                 "Fito Paez",
@@ -54,7 +57,7 @@ object EventRepository {
         events.add(
             Event(
                 5L,
-                "2025-09-21",
+                "2025-9-21",
                 "19:00",
                 "Movistar Arena",
                 "La Renga",
@@ -76,7 +79,7 @@ object EventRepository {
         events.add(
             Event(
                 7L,
-                "2025-18-07",
+                "2025-11-07",
                 "20:00",
                 "Teatro Vorterix",
                 "Skrillex",
@@ -87,9 +90,48 @@ object EventRepository {
 
     fun registrarNuevoEvento(evento: Event) : Boolean{
         return !this.seSuperponeAOtro(evento)
+                && this.esFechaValida(evento)
+                && this.esHoraValida(evento)
                 && this.validarId(evento)
                 && !this.esDuplicado(evento)
                 && this.events.add(evento)
+    }
+
+    /*
+    Para el caso de la fecha y hora de un evento, lo que vamos a plantear
+    es que la misma deba poder ser parseada usando DateTimeParser, es decir,
+    dentro de los metodos de validacion de fecha y hora buscamos obtener un
+    objeto de fecha o bien de hora a partir del String que tenemos como valor
+    de entrada en el constructor de evento.
+
+    Esto implica el uso de una excepcion ya que si el intento de parseo falla,
+    arroja una DateTimeParserException, pero si ponemos esto dentro de un bloque
+    try & catch, ambos metodos van a intentar parsear el objeto y en caso de que
+    lo hubieran hecho, indica que el valor es valido y solo retornan true
+
+    Y si dentro de alguno de ellos se lanzara una excepcion, es decir, que o bien
+    la fecha o la hora no sean validos, la excepcion se captura y se retorna false
+    haciendo que el metodo principal de registro de eventos retorne tambien false.
+     */
+
+    private fun esHoraValida(evento: Event) : Boolean{
+        try {
+            LocalTime.parse(evento.time)
+            return true
+        }
+        catch (e: DateTimeParseException){
+            return false
+        }
+    }
+
+    private fun esFechaValida(evento: Event) : Boolean{
+        try {
+            LocalDate.parse(evento.date)
+            return true
+        }
+        catch (e: DateTimeParseException){
+            return false
+        }
     }
 
     private fun validarId(evento: Event): Boolean {
@@ -134,7 +176,8 @@ object EventRepository {
     fun reiniciarInstancia() { // con esta funcion restauramos el estado de la instancia acorde al template proporcionado
         events.clear()
         events.add(
-            Event(1L,
+            Event(
+                1L,
                 "2025-10-02",
                 "21:00",
                 "Luna Park",
@@ -157,7 +200,7 @@ object EventRepository {
         events.add(
             Event(
                 3L,
-                "2021-07-30",
+                "2021-7-30",
                 "22:00",
                 "Estadio Velez Sarsfield",
                 "Fito Paez",
@@ -179,7 +222,7 @@ object EventRepository {
         events.add(
             Event(
                 5L,
-                "2025-09-21",
+                "2025-9-21",
                 "19:00",
                 "Movistar Arena",
                 "La Renga",
@@ -201,7 +244,7 @@ object EventRepository {
         events.add(
             Event(
                 7L,
-                "2025-18-07",
+                "2025-11-07",
                 "20:00",
                 "Teatro Vorterix",
                 "Skrillex",

@@ -13,6 +13,7 @@ import main.kotlin.repositories.UserRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -51,7 +52,7 @@ class ClaseDeTest {
     // +--- Funciones de test para la clase UserRepository ---+
     @Test
     fun dadoQueExisteUnRepoDeUsuariosSiRegistroUnNuevoUsuarioObtengoTrue(){
-        val usuario = User(1L, "tomasgabriel", "12345678", "Tomas", "Elbert", 32000.0, "2025/09/20") // creamos un usuario nuevo con datos ficticios
+        val usuario = User(1L, "tomasgabriel", "12345678", "Tomas", "Elbert", 32000.0, "2025-09-20") // creamos un usuario nuevo con datos ficticios
         val fueRegistrado = this.repoUsuarios.registrarNuevoUsuario(usuario) // si el usuario se registra en el repositorio el metodo tiene que retornar true
         assertTrue(fueRegistrado) // aca vamos a comparar si da bien o no
     }
@@ -59,14 +60,14 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeUsuariosSiIntentoCrearUnoConIdNegativoObtengoFalse(){
         // aca creamos un usuario que tenga un id con valor negativo
-        val usuarioConIdNoValido = User(-2L, "usuarioConIdInvalido", "12345", "N/A", "N/A", 2000.0, "2025/09/20")
+        val usuarioConIdNoValido = User(-2L, "usuarioConIdInvalido", "12345", "N/A", "N/A", 2000.0, "2025-09-20")
         val fueRegistrado = this.repoUsuarios.registrarNuevoUsuario(usuarioConIdNoValido) // esto tiene que dar false porque el sistema no deja pasar IDs negativos
         assertFalse(fueRegistrado)
     }
 
     @Test // con este test buscamos que no se pueda registrar dos veces un usuario que corresponda a la misma instancia en memoria
     fun dadoQueExisteUnRepoDeUsuariosSinDuplicadosSiGuardoUnRegistroDeNuevoObtengoFalse(){
-        val usuario = User(1L, "tomasgabriel", "12345678", "Tomas", "Elbert", 32000.0, "2025/09/20")
+        val usuario = User(1L, "tomasgabriel", "12345678", "Tomas", "Elbert", 32000.0, "2025-09-20")
         val fueRegistrado  = this.repoUsuarios.registrarNuevoUsuario(usuario) // aca lo guardamos la primera vez, tiene que dar true
         val fueRegistradoDeNuevo = this.repoUsuarios.registrarNuevoUsuario(usuario) // y aca probamos volver a registrar la misma instancia
 
@@ -85,8 +86,8 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeUsuariosSiIntentoGuardarUnUsuarioConIdRepetidoObtengoFalse(){
         // vamos a crear dos usuarios con datos diferentes pero que hipoteticamente tienen el mismo valor de ID
-        val usuario1 = User(10L, "User1", "abcd1234", "Tomas", "Elbert", 500.0, "2021/09/23")
-        val usuario2 = User(10L, "1resU", "qwerty", "Juan", "Perez", 25000.0, "2021/09/24")
+        val usuario1 = User(10L, "User1", "abcd1234", "Tomas", "Elbert", 500.0, "2021-09-23")
+        val usuario2 = User(10L, "1resU", "qwerty", "Juan", "Perez", 25000.0, "2021-09-24")
 
         // vamos a intentar guardarlos a ambos y registramos el valor de verdad que devuelven
         val primerUsuarioCreado = this.repoUsuarios.registrarNuevoUsuario(usuario1)
@@ -101,8 +102,8 @@ class ClaseDeTest {
     fun dadoQueExisteUnRepoDeUsuariosSiIntentoGuardarUnUsuarioConNicknameRepetidoObtengoFalse(){
         // en este test vamos a crear dos usuarios nuevos que entrarian en conflicto porque tienen el mismo valor como nickname
 
-        val usuario = User(5L, "tomasgabriel", "123", "Tomas", "Elbert", 12000.0, "2025/09/20")
-        val usuarioConNicknameRepetido = User(7L, "tomasgabriel", "qwerty", "Juan", "Perez", 65000.0, "2025/09/20")
+        val usuario = User(5L, "tomasgabriel", "123", "Tomas", "Elbert", 12000.0, "2025-09-20")
+        val usuarioConNicknameRepetido = User(7L, "tomasgabriel", "qwerty", "Juan", "Perez", 65000.0, "2025-09-20")
 
         // intentamos registrarlos a ambos y nos quedamos con el boolean que devuelve cada uno en el proceso
         val usuarioRegistrado = this.repoUsuarios.registrarNuevoUsuario(usuario)
@@ -116,24 +117,24 @@ class ClaseDeTest {
     @Test
     fun dadoQueNoPuedoTenerSaldoNegativoSiRegistroUnUsuarioConSaldoMenorQueCeroObtengoFalse(){
         // aca creamos un usuario con una cantidad de saldo que el sistema no debería interpretar como invalida
-        val usuarioConSaldoNegativo = User(3L, "usuarioSinSaldo", "no tengo un mango", "Tomas", "Elbert", -1.0, "2025/09/20")
+        val usuarioConSaldoNegativo = User(3L, "usuarioSinSaldo", "no tengo un mango", "Tomas", "Elbert", -1.0, "2025-09-20")
         val fueRegistrado = this.repoUsuarios.registrarNuevoUsuario(usuarioConSaldoNegativo) // intentamos registrar el usuario aca
         assertFalse(fueRegistrado) // si el test corre bien, aca nos va a devolver false cuando encuentre que el saldo es menor que cero
     }
 
     @Test
-    fun dadoQueExisteUnRepoDeUsuariosSiBuscoPorElID1510LObtengoTrue(){
+    fun dadoQueExisteUnRepoDeUsuariosSiBuscoPorElID1510LObtengoQueNoEsNulo(){
         val idBuscado = 1510L // al inicializar el repositorio de usuarios, uno de ellos tiene este ID
         val usuarioEncontrado = this.repoUsuarios.buscarUsuarioPorID(idBuscado) // llamamos al metodo que itera sobre la lista de usuarios
-        assertTrue(usuarioEncontrado) // si el metodo devolvio true, la busqueda de usuarios por id funciona como se espera
+        assertNotNull(usuarioEncontrado) // si el metodo devolvio true, la busqueda de usuarios por id funciona como se espera
     }
 
     @Test
-    fun dadoQueNoExisteUnUsuarioConID180LObtengoFalse(){
+    fun dadoQueNoExisteUnUsuarioConID180LObtengoQueEsNulo(){
         // inverso al test anterior, forzamos a que busque un id inexistente para asegurar que retorna false
         val idBuscado = 180L
         val usuarioEncontrado = this.repoUsuarios.buscarUsuarioPorID(idBuscado)
-        assertFalse(usuarioEncontrado)
+        assertNull(usuarioEncontrado)
     }
 
     @Test
@@ -145,10 +146,10 @@ class ClaseDeTest {
     }
 
     @Test
-    fun dadoQueExisteUnRepoDeUsuariosObtengoUnaListaDeTodosLosQueTienenUnSaldoMayorA150KyMenorOIgualA300K(){
+    fun dadoQueExisteUnRepoDeUsuariosObtengoUnaListaDeTodosLosQueTienenUnSaldoMayorA50KyMenorOIgualA200K(){
         // tenemos dos valores ficticios de saldo que actuan como limite inferior y superior para filtrar
-        val saldoMinimo = 150000.0
-        val saldoMaximo = 300000.0
+        val saldoMinimo = 50000.0
+        val saldoMaximo = 200000.0
 
         // aca cuando llamemos al metodo va a devolver una lista con los usuarios que pasan el filtro
         val listaDeUsuariosFiltradosPorSaldo = this.repoUsuarios.obtenerListaUsuariosFiltradosPorSaldo(saldoMinimo, saldoMaximo)
@@ -163,7 +164,7 @@ class ClaseDeTest {
 
     @Test
     fun dadoQueExisteUnRepoDeUsuariosSiBuscoPorFechaObtengoTodosLosQueSeRegistraronEseDia(){
-        val fechaDeAlta = "2021/01/20" // elegimos una fecha de alta de algun usuario
+        val fechaDeAlta = "2021-01-20" // elegimos una fecha de alta de algun usuario
 
         // con el metodo del repositorio obtenemos todos los que tengan esa fecha de alta
         val listaDeUsuariosFiltradosPorFecha = this.repoUsuarios.obtenerRegistrosPorFechaDeAlta(fechaDeAlta)
@@ -178,14 +179,14 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeEventosSiRegistroUnEventoObtengoTrue(){
         // generamos un evento cualquiera y buscamos que la instancia se guarde en su correspondiente repositorio
-        val unEvento = Event(10L, "19/11/2025", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
+        val unEvento = Event(10L, "2025-02-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(unEvento) // aca llamamos al metodo que se encargue de guarda el objeto
         assertTrue(eventoRegistrado) // y comparamos si el metodo devolvio true para que de verde el test
     }
 
     @Test
     fun dadoQueExisteUnRepoDeEventosSiRegistroUnIdNegativoObtengoFalse(){ // testeamos que los eventos no puedan tener IDs negativos
-        val eventoConIdInvalido = Event(-1L, "19/11/2025", "12:30", "River Plate", "Khea", "imagePlaceHolder")
+        val eventoConIdInvalido = Event(-1L, "2025-11-19", "08:30", "River Plate", "Khea", "imagePlaceHolder")
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(eventoConIdInvalido)
         assertFalse(eventoRegistrado)
     }
@@ -193,7 +194,7 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeEventosSiIntentoRegistrarDosVecesUnEventoAla2daObtengoFalse(){
         // aca vamos a usar el mismo objeto que creamos en el test anterior
-        val evento = Event(10L, "19/11/2025", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
+        val evento = Event(10L, "2025-11-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(evento) // lo vamos a registrar la 1era vez, esto ya da true
         val eventoRegistradoDeNuevo = this.repoEventos.registrarNuevoEvento(evento) // aca volvemos intentar guardar la misma instancia dentro del repo
 
@@ -205,8 +206,8 @@ class ClaseDeTest {
     @Test // aca vamos a testear solo el id porque en un software real este valor actuaria como clave primaria
     fun dadoQueExisteUnRepoDeEventosSiIntentoRegistrarDosEventosConElMismoIdAl2doObtengoFalse(){
         // creamos dos eventos con distintos datos pero el mismo id
-        val evento = Event(10L, "15/10/2025", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
-        val eventoRepetido = Event(10L, "19/11/2025", "18:30", "River Plate", "Duki", "imagePlaceHolder")
+        val evento = Event(10L, "2025-11-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
+        val eventoRepetido = Event(10L, "2025-11-19", "08:30", "River Plate", "Duki", "imagePlaceHolder")
 
         // ahora registramos los dos eventos
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(evento)
@@ -232,11 +233,18 @@ class ClaseDeTest {
      */
 
     @Test
+    fun dadoQueExisteUnRepoDeEventosSiIntentoGuardarUnEventoConUnaFechaInvalidaObtengoUnaExcepcionDeTipoDateTime(){
+        val eventoConFechaErronea = Event(8L, "2025-9-31", "19:30", "River Plate", "Khea", "imagePlaceHolder")
+        val fueRegistrado = this.repoEventos.registrarNuevoEvento(eventoConFechaErronea)
+        assertFalse(fueRegistrado)
+    }
+
+    @Test
     fun dadoQueExisteUnRepoDeEventosSiIntentoRegistrarConLaMismaFechaHoraYUbicacionObtengoFalse(){
         // al momento de inicializar el repo de eventos, tenemos uno de ellos registrado para el 2025-10-02 a las 21:00" en Luna Park
         // por lo tanto el siguiente objeto debe entrar en conflicto si intenta registrarse
 
-        val eventoConDatosRepetidos = Event(20L, "2025-10-02", "21:00", "Luna Park", "Luis Miguel", "imagePlaceHolder")
+        val eventoConDatosRepetidos = Event(20L, "2025-10-2", "21:00", "Luna Park", "Luis Miguel", "imagePlaceHolder")
         val fueRegistrado = this.repoEventos.registrarNuevoEvento(eventoConDatosRepetidos) // intentamos registrarlo
         assertFalse(fueRegistrado) // aca validamos que el sistema no valida los datos y se rechaza, esto da false
     }
@@ -321,7 +329,9 @@ class ClaseDeTest {
 
     @Test
     fun dadoQueExisteUnRepoDeColeccionesDeTicketsSiRegistroUnNuevoObjetoObtengoTrue(){
-        val nuevaColeccion = TicketCollection(5L, 1510L, mutableListOf(2L, 4L, 6L, 8L)) // aca creamos lo que seria un nuevo registro de una compra de tickets
+        val nuevaColeccion = TicketCollection(
+            5L, 1510L, mutableListOf(2L, 4L, 6L, 8L),
+        ) // aca creamos lo que seria un nuevo registro de una compra de tickets
         val fueRegistrado = this.repoTicketsCollection.registrarNuevaColeccion(
             nuevaColeccion,
             this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
@@ -539,15 +549,48 @@ class ClaseDeTest {
         assertEquals(estadoDeBloqueoDeUsuarioEsperado, estadoDeBloqueoDeUsuarioObtenido) // y finalmente obtenemos que si es true y el test pasa correctamente
     }
     
-    // +--- Funciones de test para la compra de tickets ---+
+    // +--- Funciones de test para validar la compra de tickets ---+
 
     @Test
-    fun dadoQueExisteUnUsuarioSiRealizaUnaCompraDeUnAsientoObtengoQueSuSaldoDisminuyeEn10000(){
+    fun dadoQueExisteUnUsuarioJonatanUranYUnRepoDeColeccionesObtengoQueElUsuarioComproEnTotal12Tickets(){
+        val userIdQueBuscamos = 2802L // sabemos que al inicializar el repo de usuarios uno de ellos se carga con este id
+        val cantidadDeTicketsEsperada = 12 // dentro del repo de colecciones la que esta enlazada con este id se inicializa con 12 tickets dentro de su lista interna
+        val cantidadTicketsObtenida = this.repoTicketsCollection.obtenerTotalDeTicketsCompradosPorUserId(userIdQueBuscamos) // pedimos al metodo que mida esa lista, devuelve el size
+        assertEquals(cantidadDeTicketsEsperada, cantidadDeTicketsEsperada) // y aca comparamos que ambos son iguales
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesConUnRegistroDelUsuario1510LobtengoSuListaDeTicketsComprados(){
+        val userIdQueBuscamos = 1510L
+        val listaDeTicketsComprados = this.repoTicketsCollection.obtenerListaDeTicketsPorId(userIdQueBuscamos)
+        assertNotNull(listaDeTicketsComprados) // aca validamos que el metodo retorna un objeto no nulo
+    }
+
+    @Test
+    fun dadoQueExisteCadaEntradaValeDiezMilYElUserJonaURANTieneDoceTicketsObtengoQueElTotalEs120000(){
+        val userIdQueBuscamos = 2802L
+        val totalAcumuladoEsperado = 120000.0
+        val totalAcumuladoObtenido = this.repoTicketsCollection.obtenerMontoTotalAcumuladoPorCompras(userIdQueBuscamos)
+        assertEquals(totalAcumuladoEsperado, totalAcumuladoObtenido, 0.00)
+    }
+
+    @Test
+    fun dadoQueExisteUnRepoDeColeccionesYUnaColeccionParaElUsuario1510LobtengoQueSuSaldoLuegoDeComprarEsCero(){
+        val userIdQueBuscamos = 1510L // ubicamos al usuario por su id
+        val saldoLuegoDeComprarEsperado = 0.0
+
         /*
-        Dado que el precio de cada entrada es 10000, debemos calcular el precio total
-        de la compra en base a este valor multiplicado por la cantidad de asientos que
-        se quieren reservar. Mas adelante testeamos como aplicar descuentos en base
-        a distintos metodos de pago
+        Luego de iniciar el repo de colecciones, la compra asociada al usuario 2802L suma un total
+        de 120000.0 acorde al precio unitario del asiento (12 tickets * $10000 cada uno)
+        por lo tanto se espera que el saldo se actualice reflejando este cambio.
+
+        Para ello, al momento que se crea o se inicializa un registro, la propia instancia
+        de TicketCollection creada que contiene el userId y la lista de IDs de los tickets
+        deberia calcular en base al precio y descontar del saldo del usuario esa cantidad
          */
+
+        val saldoLuegoDeComprarObtenido = this.repoUsuarios.obtenerSaldoDeUsuario(userIdQueBuscamos)
+
+        assertEquals(saldoLuegoDeComprarEsperado, saldoLuegoDeComprarObtenido, 0.0)
     }
 }

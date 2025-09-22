@@ -98,6 +98,36 @@ object TicketCollectionRepository {
         return false
     }
 
+    fun obtenerTotalDeTicketsCompradosPorUserId(userIdQueBuscamos: Long): Int {
+        var cantidad = 0
+        for(item in this.ticketCollections){
+            if (item.userId == userIdQueBuscamos){
+                cantidad++
+            }
+        }
+        return cantidad
+    }
+
+    fun obtenerMontoTotalAcumuladoPorCompras(userIdQueBuscamos: Long): Double {
+        var montoTotal = 0.0
+        for (item in this.ticketCollections){
+            if (item.userId == userIdQueBuscamos){
+                montoTotal += item.ticketCollection.size * 10000
+            }
+        }
+        return montoTotal
+    }
+
+    fun obtenerListaDeTicketsPorId(userIdQueBuscamos: Long): MutableList<Long>? {
+        for(item in this.ticketCollections){
+            if (item.userId == userIdQueBuscamos){
+                return item.ticketCollection
+            }
+        }
+        return null
+    }
+
+
     // al igual que los demas repositorios, para cada test lo vamos a reiniciar con esta funcion
 
     fun reiniciarInstancia() {
@@ -124,5 +154,4 @@ object TicketCollectionRepository {
             )
         )
     }
-
 }
