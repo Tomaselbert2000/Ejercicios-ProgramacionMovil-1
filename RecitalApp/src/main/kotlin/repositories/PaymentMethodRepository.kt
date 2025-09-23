@@ -56,6 +56,15 @@ object PaymentMethodRepository {
         return false
     }
 
+    fun obtenerMedioDePagoPorId(paymentId: Long): PaymentMethod? {
+        for(pm in listaMediosDePago) {
+            if(pm.id == paymentId){
+                return pm
+            }
+        }
+        return null
+    }
+
     fun reiniciarInstancia() {
         listaMediosDePago.clear()
         listaMediosDePago.add(PaymentMethod(1L, "Mercado Pago", 0.02))

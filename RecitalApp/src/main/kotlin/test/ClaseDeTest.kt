@@ -146,7 +146,7 @@ class ClaseDeTest {
     }
 
     @Test
-    fun dadoQueExisteUnRepoDeUsuariosObtengoUnaListaDeTodosLosQueTienenUnSaldoMayorA50KyMenorOIgualA200K(){
+    fun dadoQueExisteUnRepoDeUsuariosObtengoLosQueTienenUnSaldoMayorA50KyMenorOIgualA200K(){
         // tenemos dos valores ficticios de saldo que actuan como limite inferior y superior para filtrar
         val saldoMinimo = 50000.0
         val saldoMaximo = 200000.0
@@ -154,10 +154,10 @@ class ClaseDeTest {
         // aca cuando llamemos al metodo va a devolver una lista con los usuarios que pasan el filtro
         val listaDeUsuariosFiltradosPorSaldo = this.repoUsuarios.obtenerListaUsuariosFiltradosPorSaldo(saldoMinimo, saldoMaximo)
 
-        // cuando inicializamos el repositorio de usuarios, solo uno de ellos cumple el requisito planteado, por lo tanto
-        // el size de la lista tiene que ser igual a 1 para que el test sea correcto
+        // cuando inicializamos el repositorio de usuarios, solo dos de ellos cumplen el requisito planteado, por lo tanto
+        // el size de la lista tiene que ser igual a 2 para que el test sea correcto
 
-        val cantidadEsperada = 1
+        val cantidadEsperada = 2
         val cantidadObtenida = listaDeUsuariosFiltradosPorSaldo.size
         assertEquals(cantidadEsperada, cantidadObtenida)
     }
@@ -330,7 +330,7 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeColeccionesDeTicketsSiRegistroUnNuevoObjetoObtengoTrue(){
         val nuevaColeccion = TicketCollection(
-            5L, 1510L, mutableListOf(2L, 4L, 6L, 8L),
+            5L, 1510L, 1L, mutableListOf(2L, 4L, 6L, 8L),
         ) // aca creamos lo que seria un nuevo registro de una compra de tickets
         val fueRegistrado = this.repoTicketsCollection.registrarNuevaColeccion(
             nuevaColeccion,
@@ -342,7 +342,7 @@ class ClaseDeTest {
 
     @Test
     fun dadoQueExisteUnRepoDeColeccionesSiRegistroDosVecesElMismoObjetoAl2doObtengoFalse(){
-        val coleccionRepetida = TicketCollection(5L, 1510L, mutableListOf(2L, 4L, 6L, 8L)) // aca vamos a intentar guardar dos veces esto en el sistema
+        val coleccionRepetida = TicketCollection(5L, 1510L, 1L, mutableListOf(2L, 4L, 6L, 8L)) // aca vamos a intentar guardar dos veces esto en el sistema
         val fueRegistradoLaPrimeraVez = this.repoTicketsCollection.registrarNuevaColeccion(
             coleccionRepetida,
             this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
@@ -362,8 +362,8 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeColeccionesDeTicketsSiIngresoDosObjetosConMismoIdAl2doObtengoFalse(){
         // validamos que no se guarden colecciones diferentes con el mismo identificador por mas que tengan datos distintos
-        val coleccion = TicketCollection(5L, 1504L, mutableListOf(1L, 3L, 6L, 8L))
-        val coleccionConIdRepetido = TicketCollection(5L, 2802L, mutableListOf(2L, 4L, 6L, 8L))
+        val coleccion = TicketCollection(5L, 1504L, 1L, mutableListOf(1L, 3L, 6L, 8L))
+        val coleccionConIdRepetido = TicketCollection(5L, 2802L, 2L, mutableListOf(2L, 4L, 6L, 8L))
 
         val seRegistroLaPrimera = this.repoTicketsCollection.registrarNuevaColeccion(
             coleccion,
@@ -383,7 +383,7 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeColeccionesSiIngresoUnObjetoConIdNegativoObtengoFalse(){
         // vamos a validar que el sistema no deje pasar ids con valores negativos
-        val coleccionConIdNegativo = TicketCollection(-1L, 1510L, mutableListOf(1L, 4L, 6L, 8L))
+        val coleccionConIdNegativo = TicketCollection(-1L, 1510L, 1L, mutableListOf(1L, 4L, 6L, 8L))
         val fueRegistrado = this.repoTicketsCollection.registrarNuevaColeccion(
             coleccionConIdNegativo,
             this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
@@ -399,7 +399,7 @@ class ClaseDeTest {
         // al momento de inicializar el repo de usuarios, solo contamos con los siguientes IDs: 1510L, 1504L y 2802L
         // por lo tanto, el sistema debe validar que el parametro del userId en la coleccion nueva si se corresponde con alguno de los IDs de usuario ya registrados
 
-        val coleccionConUserIdInexistente = TicketCollection(5L, 10L, mutableListOf(1L, 4L, 6L, 8L)) // pasamos al constructor un ID que falle
+        val coleccionConUserIdInexistente = TicketCollection(5L, 10L, 2L, mutableListOf(1L, 4L, 6L, 8L)) // pasamos al constructor un ID que falle
 
         // para poder obtener los IDs ya existentes, la capa de usuarios debe informar a la capa de colecciones
         // igual a como hicimos con la clase de eventos y tickets, es necesario un parámetro más el cual será una lista mutable de tipo Long
@@ -420,13 +420,14 @@ class ClaseDeTest {
         // es decir, validamos que dentro de la coleccion solo haya IDs de tickets que ya existen en el sistema
 
         // al inicializa el repo de tickets, el id de ticket mas alto es 30L
-        val coleccionConNumeroDeTicketInexistente = TicketCollection(5L, 1510L, mutableListOf(1L, 4L, 6L, 31L))
+        val coleccionConNumeroDeTicketInexistente = TicketCollection(5L, 1510L, 1L, mutableListOf(1L, 4L, 6L, 31L))
 
         // para que la capa de colecciones sepa cuales IDs estan registrados, es necesario darle como parametro la lista al momento de intentar registrar un objeto
         val fueAgregado = this.repoTicketsCollection.registrarNuevaColeccion(
             coleccionConNumeroDeTicketInexistente,
             this.repoUsuarios.obtenerListaDeIDsDeUsuarios(),
-            this.repoTickets.obtenerListaDeIDsDeTickets()) // aca agregamos el nuevo parametro
+            this.repoTickets.obtenerListaDeIDsDeTickets()
+        ) // aca agregamos el nuevo parametro
 
         assertFalse(fueAgregado) // como la lista de IDs de tickets contiene 31L, nos aseguramos que el sistema no registra este objeto de manera erronea
     }
@@ -567,7 +568,7 @@ class ClaseDeTest {
     }
 
     @Test
-    fun dadoQueExisteCadaEntradaValeDiezMilYElUserJonaURANTieneDoceTicketsObtengoQueElTotalEs120000(){
+    fun dadoQueCadaEntradaValeDiezMilYElUserFran25TieneDoceTicketsObtengoQueElTotalSinComisionesAplicadasEs120000(){
         val userIdQueBuscamos = 2802L
         val totalAcumuladoEsperado = 120000.0
         val totalAcumuladoObtenido = this.repoTicketsCollection.obtenerMontoTotalAcumuladoPorCompras(userIdQueBuscamos)
@@ -575,22 +576,24 @@ class ClaseDeTest {
     }
 
     @Test
-    fun dadoQueExisteUnRepoDeColeccionesYUnaColeccionParaElUsuario1510LobtengoQueSuSaldoLuegoDeComprarEsCero(){
-        val userIdQueBuscamos = 1510L // ubicamos al usuario por su id
-        val saldoLuegoDeComprarEsperado = 0.0
+    fun dadoQueElUsuario1510LSeInicializaCon120KyElPrecioTotalEs121400ObtengoQueNoCompraLaColeccionYelSaldoNoSeAltera(){
+        this.repoUsuarios.reiniciarInstancia()
+        this.repoTicketsCollection.reiniciarInstancia()
+        val userIdQueBuscamos = 1510L // aca tenemos el valor del id del user que queremos validar
+        // dado que los objetos se inicializan antes de correr los tests, aca lo que hacemos es directamente comparar valores
+        val saldoDelUsuarioEsperado = 120000.0 // al intentar registrar la compra, el saldo sin comsiones ya es 120K, sumando comisiones el usuario no deberia poder comprar
+        val saldoDelUsuaroObtenido = this.repoUsuarios.obtenerSaldoDeUsuario(userIdQueBuscamos)
+        assertEquals(saldoDelUsuarioEsperado, saldoDelUsuaroObtenido, 0.00)
+    }
 
-        /*
-        Luego de iniciar el repo de colecciones, la compra asociada al usuario 2802L suma un total
-        de 120000.0 acorde al precio unitario del asiento (12 tickets * $10000 cada uno)
-        por lo tanto se espera que el saldo se actualice reflejando este cambio.
-
-        Para ello, al momento que se crea o se inicializa un registro, la propia instancia
-        de TicketCollection creada que contiene el userId y la lista de IDs de los tickets
-        deberia calcular en base al precio y descontar del saldo del usuario esa cantidad
-         */
-
-        val saldoLuegoDeComprarObtenido = this.repoUsuarios.obtenerSaldoDeUsuario(userIdQueBuscamos)
-
-        assertEquals(saldoLuegoDeComprarEsperado, saldoLuegoDeComprarObtenido, 0.0)
+    @Test
+    fun dadoQueElUsuario1504PagaConVisaObtengoQueSuSaldoEs3378800con50(){
+        // para simular un escenario real sin errores, reiniciamos los objects aca adentro, de otro modo intentará descontar varias veces el mismo valor
+        this.repoUsuarios.reiniciarInstancia()
+        this.repoTicketsCollection.reiniciarInstancia()
+        val userIdQueBuscamos = 1504L // este usuario sabemos que arranca con 3500000.50
+        val saldoDelUsuarioEsperado = 3378800.50 // suponiendo que se descuentan los 12 tickets mas el descuento del 1%,, tiene que quedar esto
+        val saldoDelUsuarioObtenido = this.repoUsuarios.obtenerSaldoDeUsuario(userIdQueBuscamos) // preguntamos el saldo actual
+        assertEquals(saldoDelUsuarioEsperado, saldoDelUsuarioObtenido, 0.00) // y aca el test nos devuelve que son iguales
     }
 }

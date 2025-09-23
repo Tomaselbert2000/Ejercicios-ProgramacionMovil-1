@@ -36,7 +36,7 @@ object UserRepository {
     fun registrarNuevoUsuario(usuarioNuevo: User): Boolean{
         return this.validarId(usuarioNuevo) &&
                 !this.estaDuplicado(usuarioNuevo) &&
-                this.saldoInicialValido(usuarioNuevo) &&
+                this.saldoValido(usuarioNuevo) &&
                 users.add(usuarioNuevo)
     }
 
@@ -44,7 +44,7 @@ object UserRepository {
         return usuarioNuevo.id >= 1L
     }
 
-    private fun saldoInicialValido(usuarioNuevo: User) : Boolean{
+    private fun saldoValido(usuarioNuevo: User) : Boolean{
         return usuarioNuevo.money >= 0.0
     }
 
