@@ -6,59 +6,68 @@ object TicketCollectionRepository {
 
     private val ticketCollections = mutableListOf<TicketCollection>()
     private val repoUsuarios = UserRepository
+    private val repoTickets = TicketsRepository
     private val repoMediosDePago = PaymentMethodRepository
 
     init {
-        ticketCollections.add(
-            TicketCollection(
-                1L,
-                1510L,
-                1L, // paga con Mercado Pago
-                mutableListOf(1L, 3L, 12L, 27L, 5L, 19L, 8L, 30L, 2L, 14L, 22L, 9L),
-            )
-        )
-        ticketCollections.add(
-            TicketCollection(
-                2L,
-                1504L,
-                2L, // paga con Visa
-                mutableListOf(1L, 3L, 6L, 17L, 30L, 11L, 24L, 3L, 29L, 18L, 6L, 10L)
-            )
-        )
-        ticketCollections.add(
-            TicketCollection(
-                3L,
-                2802L,
-                3L, // paga con MasterCard
-                mutableListOf(1L, 3L, 25L, 7L, 14L, 30L, 2L, 12L, 28L, 19L, 5L, 25L)
-            )
-        )
+
+        // cuando se inicializa esta clase, ya carga los cambios apropiados en el saldo de los usuarios que registren compras
+
+        this.registrarNuevaColeccion(TicketCollection(1L, 1510L, 1L, mutableListOf(1L, 3L, 12L, 27L, 5L, 19L, 8L, 30L, 2L, 14L, 22L, 9L)),
+            repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            repoTickets.obtenerListaDeIDsDeTickets())
+
+        this.registrarNuevaColeccion(TicketCollection(2L, 1504L, 2L, mutableListOf(1L, 3L, 6L, 17L, 30L, 11L, 24L, 3L, 29L, 18L, 6L, 10L)),
+            repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            repoTickets.obtenerListaDeIDsDeTickets())
+
+        this.registrarNuevaColeccion(TicketCollection(3L, 2802L, 3L, mutableListOf(1L, 3L, 25L, 7L, 14L, 30L, 2L, 12L, 28L, 19L, 5L, 25L)),
+            repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            repoTickets.obtenerListaDeIDsDeTickets())
     }
 
     fun get(): List<TicketCollection> {
         return emptyList()
     }
 
-    fun registrarNuevaColeccion(
-        nuevaColeccion: TicketCollection,
-        listaDeIDsDeUsuariosRegistrados: MutableList<Long>,
-        listaDeIDsDeTicketsRegistrados: MutableList<Long>
-    ) : Boolean{
-        return !this.esDuplicado(nuevaColeccion)
-                && this.validarUserID(nuevaColeccion, listaDeIDsDeUsuariosRegistrados)
-                && this.validarId(nuevaColeccion)
-                && this.validarListadoDeIDsTickets(nuevaColeccion, listaDeIDsDeTicketsRegistrados)
-                && !this.idRepetido(nuevaColeccion)
-                && this.cuentaConSaldoSuficiente(nuevaColeccion)
-                && this.ticketCollections.add(nuevaColeccion)
+    fun registrarNuevaColeccion( // este metodo registra dentro del repositorio una nueva coleccion que hace las veces de registro de compra
+
+        nuevaColeccion: TicketCollection, // este objeto es la nueva instancia en si
+        listaDeIDsDeUsuariosRegistrados: MutableList<Long>, // aca recibimos una lista de tipo Long con los IDs de usuarios del sistema
+        listaDeIDsDeTicketsRegistrados: MutableList<Long> // y aca otra lista long con los IDs de los tickets registrados
+
+    ) : Boolean{ // armamos una variable que tenga la suma logica de todas las validaciones que tenemos que tener para guardar un registro
+        val listaValidaciones = this.esDuplicado(nuevaColeccion) && this.validarUserID(nuevaColeccion, listaDeIDsDeUsuariosRegistrados)
+                && this.validarId(nuevaColeccion) && this.validarListadoDeIDsTickets(nuevaColeccion, listaDeIDsDeTicketsRegistrados)
+                && !this.idRepetido(nuevaColeccion) && this.cuentaConSaldoSuficiente(nuevaColeccion)
+
+        if(!listaValidaciones) { // si alguna de ellas falla, va a dar false, y automaticamente el metodo completo retorna false
+            return false
+        }
+
+        val montoTotal = this.calcularMontoTotal(nuevaColeccion)
+        val usuarioQueRealizaLaCompra = this.repoUsuarios.buscarUsuarioPorID(nuevaColeccion.userId)
+        if (usuarioQueRealizaLaCompra != null){
+            usuarioQueRealizaLaCompra.money -= montoTotal
+        }
+
+        this.ticketCollections.add(nuevaColeccion)
+        return true
+    }
+
+    private fun calcularMontoTotal(nuevaColeccion: TicketCollection): Double {
+        val precioBasico = nuevaColeccion.ticketCollection.size * 10000.0
+        val valorComision = precioBasico * this.obtenerValorDeComisionAplicable(nuevaColeccion)
+        return precioBasico + valorComision
     }
 
     private fun cuentaConSaldoSuficiente(nuevaColeccion: TicketCollection): Boolean {
+        val precioDeLaCompra = nuevaColeccion.ticketCollection.size * 10000.0
         val saldoParaChequear = this.obtenerSaldoUsuarioAsociado(nuevaColeccion.userId, repoUsuarios) // llamamos a una funcion que mediante el repo de usuarios busca el saldo a comparar
-        return saldoParaChequear >= (this.ticketCollections.size * 10000.0) +
-                (((this.ticketCollections.size * 10000.0) * this.obtenerValorDeComisionAplicable(nuevaColeccion))) // y devolvemos el valor de verdad de esta comparacion
+        return saldoParaChequear >= precioDeLaCompra + precioDeLaCompra * this.obtenerValorDeComisionAplicable(nuevaColeccion) // y devolvemos el valor de verdad de esta comparacion
     }
 
+    // con esta funcion se busca dentro del repositorio de metodos de pago usando el ID, y mediante eso se saca el valor de comision
     private fun obtenerValorDeComisionAplicable(nuevaColeccion: TicketCollection): Double {
         val metodoAplicable = this.repoMediosDePago.obtenerMedioDePagoPorId(nuevaColeccion.paymentId)
         return metodoAplicable?.fee ?: 0.0
@@ -149,34 +158,17 @@ object TicketCollectionRepository {
         return userRepo.obtenerSaldoDeUsuario(userIdQueBuscamos)
     }
 
+    fun buscarComprasPorId(userIdQueCompro: Long): MutableList<TicketCollection> {
+        val listaDeComprasDelUsuario = mutableListOf<TicketCollection>()
+        for (compra in this.ticketCollections){
+            if (compra.userId == userIdQueCompro){
+                listaDeComprasDelUsuario.add(compra)
+            }
+        }
+        return listaDeComprasDelUsuario
+    }
 
-    // al igual que los demas repositorios, para cada test lo vamos a reiniciar con esta funcion
-
-    fun reiniciarInstancia() {
+    fun limpiarInstancia() {
         ticketCollections.clear()
-        ticketCollections.add(
-            TicketCollection(
-                1L,
-                1510L,
-                1L,
-                mutableListOf(1L, 3L, 12L, 27L, 5L, 19L, 8L, 30L, 2L, 14L, 22L, 9L)
-            )
-        )
-        ticketCollections.add(
-            TicketCollection(
-                2L,
-                1504L,
-                2L,
-                mutableListOf(1L, 3L, 6L, 17L, 30L, 11L, 24L, 3L, 29L, 18L, 6L, 10L)
-            )
-        )
-        ticketCollections.add(
-            TicketCollection(
-                3L,
-                2802L,
-                3L,
-                mutableListOf(1L, 3L, 25L, 7L, 14L, 30L, 2L, 12L, 28L, 19L, 5L, 25L)
-            )
-        )
     }
 }

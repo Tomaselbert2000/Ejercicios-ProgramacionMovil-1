@@ -28,10 +28,4 @@ data class User(
     fun obtenerSaldo(): Double {
         return this.money
     }
-
-    fun descontarMontoDeCompra(montoDeCompra: Double) {
-        if(montoDeCompra <= this.money){
-            this.money -= montoDeCompra
-        }
-    }
 }

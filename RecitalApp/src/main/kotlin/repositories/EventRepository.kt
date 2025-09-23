@@ -173,8 +173,11 @@ object EventRepository {
         return listadoDeIds
     }
 
-    fun reiniciarInstancia() { // con esta funcion restauramos el estado de la instancia acorde al template proporcionado
+    fun limpiarInstancia() { // con esta funcion restauramos el estado de la instancia acorde al template proporcionado
         events.clear()
+    }
+
+    fun recargarInstancia() {
         events.add(
             Event(
                 1L,

@@ -67,8 +67,8 @@ object PaymentMethodRepository {
 
     fun reiniciarInstancia() {
         listaMediosDePago.clear()
-        listaMediosDePago.add(PaymentMethod(1L, "Mercado Pago", 0.02))
+        /*listaMediosDePago.add(PaymentMethod(1L, "Mercado Pago", 0.02))
         listaMediosDePago.add(PaymentMethod(2L, "Visa", 0.01))
-        listaMediosDePago.add(PaymentMethod(3L, "MasterCard", 0.03))
+        listaMediosDePago.add(PaymentMethod(3L, "MasterCard", 0.03))*/
     }
 }
