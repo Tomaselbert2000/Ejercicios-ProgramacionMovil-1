@@ -156,13 +156,13 @@ object EventRepository {
         return false
     }
 
-    fun buscarEventoPorId(idBuscado: Long): Boolean {
+    fun buscarEventoPorId(idBuscado: Long): Event? {
         for (e in this.events){
             if (e.id == idBuscado){
-                return true
+                return e
             }
         }
-        return false
+        return null
     }
 
     fun obtenerListaDeIDsEventos(): MutableList<Long> {
@@ -171,6 +171,10 @@ object EventRepository {
             listadoDeIds.add(e.id)
         }
         return listadoDeIds
+    }
+
+    fun obtenerListaDeEventos(): MutableList<Event> {
+        return this.events
     }
 
     fun limpiarInstancia() { // con esta funcion restauramos el estado de la instancia acorde al template proporcionado

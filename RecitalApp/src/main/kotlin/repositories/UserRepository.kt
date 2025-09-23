@@ -12,7 +12,12 @@ object UserRepository {
         users.add(User(1510L, "jonaURAN", "@12345", "Jonatan", "Uran", 125000.0, "2018-04-15"))
     }
 
-    fun login(): User? {
+    fun login(nickname: String, password: String): User? {
+        for (usr in users) {
+            if (this.iniciarSesion(nickname, password)) {
+                return usr
+            }
+        }
         return null
     }
 
@@ -122,4 +127,11 @@ object UserRepository {
         }
         return 0.0
     }
+
+    fun reiniciarInstancia() {
+        users.add(User(1504L, "MARTIN_ALBANESI", "abc4321", "Martin", "Albanesi", 350000.0, "2024-05-13"))
+        users.add(User(2802L, "Fran25", "contraseña123", "Franco German", "Mazafra", 200000.0, "2021-01-20"))
+        users.add(User(1510L, "jonaURAN", "@12345", "Jonatan", "Uran", 125000.0, "2018-04-15"))
+    }
+
 }

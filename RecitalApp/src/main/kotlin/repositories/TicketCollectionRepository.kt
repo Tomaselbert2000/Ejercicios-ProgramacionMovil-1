@@ -171,4 +171,18 @@ object TicketCollectionRepository {
     fun limpiarInstancia() {
         ticketCollections.clear()
     }
+
+    fun recargarInstancia() {
+        this.registrarNuevaColeccion(TicketCollection(1L, 1510L, 1L, mutableListOf(1L, 3L, 12L, 27L, 5L, 19L, 8L, 30L, 2L, 14L, 22L, 9L)),
+            repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            repoTickets.obtenerListaDeIDsDeTickets())
+
+        this.registrarNuevaColeccion(TicketCollection(2L, 1504L, 2L, mutableListOf(1L, 3L, 6L, 17L, 30L, 11L, 24L, 3L, 29L, 18L, 6L, 10L)),
+            repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            repoTickets.obtenerListaDeIDsDeTickets())
+
+        this.registrarNuevaColeccion(TicketCollection(3L, 2802L, 3L, mutableListOf(1L, 3L, 25L, 7L, 14L, 30L, 2L, 12L, 28L, 19L, 5L, 25L)),
+            repoUsuarios.obtenerListaDeIDsDeUsuarios(),
+            repoTickets.obtenerListaDeIDsDeTickets())
+    }
 }
