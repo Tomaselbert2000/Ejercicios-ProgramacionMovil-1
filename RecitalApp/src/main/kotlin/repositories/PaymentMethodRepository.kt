@@ -1,6 +1,11 @@
 package main.kotlin.repositories
 
+import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.date
+import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.time
 import main.kotlin.data.PaymentMethod
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalTime
 
 object PaymentMethodRepository {
 
@@ -12,13 +17,39 @@ object PaymentMethodRepository {
         listaMediosDePago.add(PaymentMethod(3L, "MasterCard", 0.03))
     }
 
+    private fun obtenerFee(pm: PaymentMethod, date: LocalDate, time: LocalTime): Double {
+        return when (pm.name) {
+            "Mercado Pago" -> 0.02
+            "Visa" -> {
+                if (time in LocalTime.of(15, 0)..LocalTime.of(22, 30)) {
+                    0.01
+                } else {
+                    0.03
+                }
+            }
+            "MasterCard" -> {
+                if (date.dayOfWeek == DayOfWeek.SATURDAY || date.dayOfWeek == DayOfWeek.SUNDAY) {
+                    0.03
+                } else {
+                    0.0075
+                }
+            }
+            else -> 0.0
+        }
+    }
+
     fun registrarNuevoMedioDePago(nuevoMedioDePago: PaymentMethod): Boolean {
-        return !this.estaDuplicado(nuevoMedioDePago)
+        val precondiciones = !this.estaDuplicado(nuevoMedioDePago)
                 && !this.idRepetido(nuevoMedioDePago)
                 && !this.nombreRepetido(nuevoMedioDePago)
                 && this.idValido(nuevoMedioDePago)
                 && this.valorDeComisionValido(nuevoMedioDePago)
-                && this.listaMediosDePago.add(nuevoMedioDePago)
+        if (precondiciones){
+            this.obtenerFee(nuevoMedioDePago, LocalDate.now(), LocalTime.now())
+            this.listaMediosDePago.add(nuevoMedioDePago)
+            return true
+        }
+        return false
     }
 
     private fun valorDeComisionValido(nuevoMedioDePago: PaymentMethod): Boolean {
@@ -73,5 +104,13 @@ object PaymentMethodRepository {
 
     fun limpiarInstancia() {
         listaMediosDePago.clear()
+    }
+
+    fun obtenerListaDeIDs(): MutableList<Long> {
+        val listaDeIds = mutableListOf<Long>()
+        for (item in listaMediosDePago) {
+            listaDeIds.add(item.id)
+        }
+        return listaDeIds
     }
 }

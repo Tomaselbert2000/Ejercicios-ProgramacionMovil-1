@@ -37,7 +37,7 @@ object TicketCollectionRepository {
         listaDeIDsDeTicketsRegistrados: MutableList<Long> // y aca otra lista long con los IDs de los tickets registrados
 
     ) : Boolean{ // armamos una variable que tenga la suma logica de todas las validaciones que tenemos que tener para guardar un registro
-        val listaValidaciones = this.esDuplicado(nuevaColeccion) && this.validarUserID(nuevaColeccion, listaDeIDsDeUsuariosRegistrados)
+        val listaValidaciones = !this.esDuplicado(nuevaColeccion) && this.validarUserID(nuevaColeccion, listaDeIDsDeUsuariosRegistrados)
                 && this.validarId(nuevaColeccion) && this.validarListadoDeIDsTickets(nuevaColeccion, listaDeIDsDeTicketsRegistrados)
                 && !this.idRepetido(nuevaColeccion) && this.cuentaConSaldoSuficiente(nuevaColeccion)
 
@@ -172,7 +172,7 @@ object TicketCollectionRepository {
         ticketCollections.clear()
     }
 
-    fun recargarInstancia() {
+    fun reiniciarInstancia() {
         this.registrarNuevaColeccion(TicketCollection(1L, 1510L, 1L, mutableListOf(1L, 3L, 12L, 27L, 5L, 19L, 8L, 30L, 2L, 14L, 22L, 9L)),
             repoUsuarios.obtenerListaDeIDsDeUsuarios(),
             repoTickets.obtenerListaDeIDsDeTickets())

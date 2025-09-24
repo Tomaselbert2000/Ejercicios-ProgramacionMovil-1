@@ -1,7 +1,6 @@
 package main.kotlin.repositories
 
 import main.kotlin.data.Ticket
-import main.kotlin.data.TicketCollection
 
 object TicketsRepository {
 
@@ -330,7 +329,7 @@ object TicketsRepository {
         return nuevoTicket.id >= 1L
     }
 
-    fun recargarInstancia() {
+    fun reiniciarInstancia() {
         tickets.add(
             Ticket(
                 1L,

@@ -1,4 +1,4 @@
-/*package main.kotlin.test
+package main.kotlin.test
 
 import main.kotlin.data.Event
 import main.kotlin.data.PaymentMethod
@@ -224,10 +224,12 @@ class ClaseDeTest {
 
     @Test // aca testeamos que el sistema sea capaz de ubicar un evento por su Id
     fun dadoQueExisteUnRepoDeEventosConUnEventoCargadoSiBuscoPorId2LobtengoTrue(){
+        this.repoEventos.limpiarInstancia()
+        this.repoEventos.reiniciarInstancia()
         val idBuscado = 2L
         this.repoEventos.registrarNuevoEvento(Event(idBuscado, "2025-09-23", "08:30", "Estadio Unico", "Duki","imagePlaceHolder"))
         val seEncontroEvento = this.repoEventos.buscarEventoPorId(idBuscado) // buscamos y esto debe retornar true
-        assertTrue(seEncontroEvento) // y validamos que asi sea
+        assertTrue(seEncontroEvento?.id == idBuscado)
     }
 
     /*
@@ -264,9 +266,9 @@ class ClaseDeTest {
         this.repoTicketsCollection.limpiarInstancia()
 
         this.repoUsuarios.reiniciarInstancia()
-        this.repoEventos.recargarInstancia()
-        this.repoTickets.recargarInstancia()
-        this.repoTicketsCollection.recargarInstancia()
+        this.repoEventos.reiniciarInstancia()
+        this.repoTickets.reiniciarInstancia()
+        this.repoTicketsCollection.reiniciarInstancia()
 
         val nuevoTicket = Ticket(50L, 3L, 1, "Platea") // aca creamos un nuevo ticket con datos ficticios
         val fueRegistrado = this.repoTickets.registrarNuevoTicket(nuevoTicket, this.repoEventos.obtenerListaDeIDsEventos()) // llamamos al repositorio
@@ -282,6 +284,8 @@ class ClaseDeTest {
 
     @Test
     fun dadoQueExisteUnRepoDeTicketsSiRegistroDosVecesElMismoAl2doObtengoFalse(){
+        this.repoEventos.reiniciarInstancia()
+
         val nuevoTicket = Ticket(450L, 3L, 1, "Platea")
         val fueRegistrado = this.repoTickets.registrarNuevoTicket(nuevoTicket, this.repoEventos.obtenerListaDeIDsEventos()) // lo registramos la primera vez en el sistema
         val fueRegistradoDeNuevo = this.repoTickets.registrarNuevoTicket(nuevoTicket, this.repoEventos.obtenerListaDeIDsEventos()) // tomamos la misma instancia y la volvemos a cargar al sistema
@@ -294,6 +298,7 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeTicketsSiQuieroRegistrarDosConElMismoIdAl2doObtengoFalse(){
         // creamos dos tickets con distintos datos pero el mismo id, tienen que entrar en conflicto
+        this.repoEventos.reiniciarInstancia()
         val ticket = Ticket(45L, 3L, 1, "Platea")
         val ticketConIdRepetido = Ticket(45L, 1L, 5, "Platea")
 
@@ -355,8 +360,13 @@ class ClaseDeTest {
 
     @Test
     fun dadoQueExisteUnRepoDeColeccionesSiRegistroDosVecesElMismoObjetoAl2doObtengoFalse(){
+        // vamos a crear los objetos necesarios para el test
+        this.repoUsuarios.reiniciarInstancia()
+        this.repoMediosDePago.reiniciarInstancia()
+        this.repoEventos.reiniciarInstancia()
+        this.repoTickets.reiniciarInstancia()
 
-        val primeraColeccion = TicketCollection(6L, 1510L, 1L, mutableListOf<Long>(2L))
+        val primeraColeccion = TicketCollection(6L, 1510L, 1L, mutableListOf<Long>(1L))
         val seRegistroLaPrimera = this.repoTicketsCollection.registrarNuevaColeccion(primeraColeccion, this.repoUsuarios.obtenerListaDeIDsDeUsuarios(), this.repoTickets.obtenerListaDeIDsDeTickets())
         val seRegistroLaSegunda = this.repoTicketsCollection.registrarNuevaColeccion(primeraColeccion, this.repoUsuarios.obtenerListaDeIDsDeUsuarios(), this.repoTickets.obtenerListaDeIDsDeTickets())
         assertTrue(seRegistroLaPrimera)
@@ -553,6 +563,12 @@ class ClaseDeTest {
 
     @Test
     fun dadoQueAlIniciarseLosReposElUsuarioMARTIN_ALBANESItieneUnaCompraObtengoTrue(){
+        this.repoUsuarios.reiniciarInstancia()
+        this.repoMediosDePago.reiniciarInstancia()
+        this.repoEventos.reiniciarInstancia()
+        this.repoTickets.reiniciarInstancia()
+        this.repoTicketsCollection.reiniciarInstancia()
+
         val userIdDeMartin = 1504L // vamos a usar el id para buscar sus compras
         val cantidadDeComprasEsperada = 1 // cuando se inicializan las colecciones, este usuario ya deberia tener una compra
         val cantidadDeComprasObtenida = this.repoTicketsCollection.buscarComprasPorId(userIdDeMartin).size // buscamos el size de su lista de compras
@@ -560,12 +576,17 @@ class ClaseDeTest {
     }
 
     @Test
-    fun dadoQueElUsuarioMartinAlbanesiPagaConVisaObtengoQueSuSaldoEs228600(){
-        this.repoUsuarios.limpiarInstancia()
+    fun dadoQueElUsuarioMartinAlbanesiPagaConVisaObtengoQueSuSaldoEs228800(){
         // luego de cargados los repos, al usuario Martin Albanesi se le tienen que descontar sus tickets + 1% de comision por el uso de Visa
+        this.repoMediosDePago.reiniciarInstancia()
+        this.repoUsuarios.reiniciarInstancia()
+        this.repoEventos.reiniciarInstancia()
+        this.repoTickets.reiniciarInstancia()
+        this.repoTicketsCollection.reiniciarInstancia()
+
         val userIdDeMartin = 1504L
         val saldoDeMartinEsperado = 228800.0
         val saldoDeMartinObtenido = this.repoUsuarios.obtenerSaldoDeUsuario(userIdDeMartin)
         assertEquals(saldoDeMartinEsperado, saldoDeMartinObtenido, 0.0)
     }
-}*/
+}

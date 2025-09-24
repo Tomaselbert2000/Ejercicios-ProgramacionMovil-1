@@ -54,34 +54,45 @@ fun main() {
                     println("ID: " + evento.id + " | " + evento.artist + " en " + evento.location + " el " + evento.date + " " + evento.time)
                 }
 
-                print("Ingrese el ID del evento: ")
-                val eventId = readln().toLong()
+                var eventId : Long ? = null
+                do {
+                    val listaDeIdsDeEventos = repoEventos.obtenerListaDeIDsEventos()
+                    print("Ingrese el ID del evento: ")
+                    eventId = readln().toLong()
+                    if (!listaDeIdsDeEventos.contains(eventId)){
+                        println("El ID ingresado no corresponde a un elemento de la lista de eventos. Intente nuevamente.")
+                    }
+                }while (!listaDeIdsDeEventos.contains(eventId))
 
-                print("Ingrese la cantidad de entradas: ")
-                val cantidad = readln().toInt()
+                var cantidad : Int? = null
+                do {
+                    print("Ingrese la cantidad de entradas: ")
+                    cantidad = readln().toInt()
+                    if (cantidad <= 0){
+                        println("La cantidad de entradas ingresada no es valida. Intente nuevamente.")
+                    }
+                }while (cantidad <= 0)
 
-                println("Seleccione medio de pago:")
-                println("1. Visa")
-                println("2. MasterCard")
-                println("3. MercadoPago")
-                val opcionMedio = readln().toLong()
-                val medio = repoMediosDePago.obtenerMedioDePagoPorId(opcionMedio)
-                /*{
-                    Visa()
-                } else if (opcionMedio == 2) {
-                    MasterCard()
-                } else {
-                    MercadoPago()
-                }*/
+                do {
+                    val listaDeIdsDeMediosDePago = repoMediosDePago.obtenerListaDeIDs()
+                    println("Seleccione medio de pago:")
+                    println("1. Visa")
+                    println("2. MasterCard")
+                    println("3. MercadoPago")
+                    val opcionMedio = readln().toLong()
+                    if (!listaDeIdsDeMediosDePago.contains(opcionMedio)){
+                        println("El valor ingresado no corresponde a un medio de pago. Intente nuevamente.")
+                    }
+                }while(!listaDeIdsDeMediosDePago.contains(opcionMedio))
 
-                try {
+                /*try {
                     val nuevaColeccion = TicketCollection(1, eventId, 5, medio)
                     val monto = compraService.comprarEntrada(loggedUser, eventId, cantidad, medio)
                     println("Compra realizada con éxito. Total pagado: " + monto)
                     println("Saldo restante: " + loggedUser.money)
                 } catch (e: Exception) {
                     println("Error en la compra: " + e.message)
-                }
+                }*/
             }
             3 -> mostrarEntradas(loggedUser.id)
             4 -> {

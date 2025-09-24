@@ -181,7 +181,7 @@ object EventRepository {
         events.clear()
     }
 
-    fun recargarInstancia() {
+    fun reiniciarInstancia() {
         events.add(
             Event(
                 1L,
