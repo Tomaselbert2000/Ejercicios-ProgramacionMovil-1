@@ -181,14 +181,14 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeEventosSiRegistroUnEventoObtengoTrue(){
         // generamos un evento cualquiera y buscamos que la instancia se guarde en su correspondiente repositorio
-        val unEvento = Event(10L, "2025-02-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
+        val unEvento = Event(10L, 1000, "2025-02-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(unEvento) // aca llamamos al metodo que se encargue de guarda el objeto
         assertTrue(eventoRegistrado) // y comparamos si el metodo devolvio true para que de verde el test
     }
 
     @Test
     fun dadoQueExisteUnRepoDeEventosSiRegistroUnIdNegativoObtengoFalse(){ // testeamos que los eventos no puedan tener IDs negativos
-        val eventoConIdInvalido = Event(-1L, "2025-11-19", "08:30", "River Plate", "Khea", "imagePlaceHolder")
+        val eventoConIdInvalido = Event(-1L, 1000, "2025-11-19", "08:30", "River Plate", "Khea", "imagePlaceHolder")
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(eventoConIdInvalido)
         assertFalse(eventoRegistrado)
     }
@@ -196,7 +196,7 @@ class ClaseDeTest {
     @Test
     fun dadoQueExisteUnRepoDeEventosSiIntentoRegistrarDosVecesUnEventoAla2daObtengoFalse(){
         this.repoEventos.limpiarInstancia()
-        val evento = Event(10L, "2025-11-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
+        val evento = Event(10L, 1000, "2025-11-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(evento) // lo vamos a registrar la 1era vez, esto ya da true
         val eventoRegistradoDeNuevo = this.repoEventos.registrarNuevoEvento(evento) // aca volvemos intentar guardar la misma instancia dentro del repo
 
@@ -210,8 +210,8 @@ class ClaseDeTest {
         this.repoEventos.limpiarInstancia()
 
         // creamos dos eventos con distintos datos pero el mismo id
-        val evento = Event(10L, "2025-11-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
-        val eventoRepetido = Event(10L, "2025-11-19", "08:30", "River Plate", "Duki", "imagePlaceHolder")
+        val evento = Event(10L, 1000, "2025-11-19", "08:30", "Estadio Unico de La Plata", "Khea", "imagePlaceHolder")
+        val eventoRepetido = Event(10L, 1000, "2025-11-19", "08:30", "River Plate", "Duki", "imagePlaceHolder")
 
         // ahora registramos los dos eventos
         val eventoRegistrado = this.repoEventos.registrarNuevoEvento(evento)
@@ -227,7 +227,15 @@ class ClaseDeTest {
         this.repoEventos.limpiarInstancia()
         this.repoEventos.reiniciarInstancia()
         val idBuscado = 2L
-        this.repoEventos.registrarNuevoEvento(Event(idBuscado, "2025-09-23", "08:30", "Estadio Unico", "Duki","imagePlaceHolder"))
+        this.repoEventos.registrarNuevoEvento(Event(
+            idBuscado,
+            1000,
+            "2025-09-23",
+            "08:30",
+            "Estadio Unico",
+            "Duki",
+            "imagePlaceHolder"
+        ))
         val seEncontroEvento = this.repoEventos.buscarEventoPorId(idBuscado) // buscamos y esto debe retornar true
         assertTrue(seEncontroEvento?.id == idBuscado)
     }
@@ -241,7 +249,7 @@ class ClaseDeTest {
 
     @Test
     fun dadoQueExisteUnRepoDeEventosSiIntentoGuardarUnEventoConUnaFechaInvalidaObtengoUnaExcepcionDeTipoDateTime(){
-        val eventoConFechaErronea = Event(8L, "2025-9-31", "19:30", "River Plate", "Khea", "imagePlaceHolder")
+        val eventoConFechaErronea = Event(8L, 1000, "2025-9-31", "19:30", "River Plate", "Khea", "imagePlaceHolder")
         val fueRegistrado = this.repoEventos.registrarNuevoEvento(eventoConFechaErronea)
         assertFalse(fueRegistrado)
     }
@@ -251,7 +259,15 @@ class ClaseDeTest {
         // al momento de inicializar el repo de eventos, tenemos uno de ellos registrado para el 2025-10-02 a las 21:00" en Luna Park
         // por lo tanto el siguiente objeto debe entrar en conflicto si intenta registrarse
 
-        val eventoConDatosRepetidos = Event(20L, "2025-10-2", "21:00", "Luna Park", "Luis Miguel", "imagePlaceHolder")
+        val eventoConDatosRepetidos = Event(
+            20L,
+            1000,
+            "2025-10-2",
+            "21:00",
+            "Luna Park",
+            "Luis Miguel",
+            "imagePlaceHolder"
+        )
         val fueRegistrado = this.repoEventos.registrarNuevoEvento(eventoConDatosRepetidos) // intentamos registrarlo
         assertFalse(fueRegistrado) // aca validamos que el sistema no valida los datos y se rechaza, esto da false
     }
@@ -588,5 +604,36 @@ class ClaseDeTest {
         val saldoDeMartinEsperado = 228800.0
         val saldoDeMartinObtenido = this.repoUsuarios.obtenerSaldoDeUsuario(userIdDeMartin)
         assertEquals(saldoDeMartinEsperado, saldoDeMartinObtenido, 0.0)
+    }
+
+    @Test
+    fun dadoQueExisteUnEventoCon1000AsientosSiCompro30AsientosObtengoQueQuedan970Disponibles(){
+        this.repoMediosDePago.reiniciarInstancia() // limpiamos los medios de pago para habilitar crear el ticket
+
+        // creamos algunos elementos de prueba
+        val usuarioPrueba = User(1500L, "userPrueba", "password", "tomas", "elbert", 255000.0, "2025-06-01")
+        this.repoUsuarios.registrarNuevoUsuario(usuarioPrueba)
+
+        val eventoPrueba = Event(1L, 1000, "2025-09-24", "19:30", "San Justo", "Duki", "image")
+        this.repoEventos.registrarNuevoEvento(eventoPrueba)
+
+        val ticketPrueba = Ticket(1L, 1L, 30, "Campo") // este ticket esta asociado al evento anterior mediante el 1L en el 2do parametro del constructor
+        this.repoTickets.registrarNuevoTicket(ticketPrueba, this.repoEventos.obtenerListaDeIDsEventos())
+
+        /*
+        Aca creamos una compra, dentro de la mutableListOf() ponemos 1L porque es el ID que creamos para el ticket (el 1L en el 1er parametro del constructor)
+        Por otra parte, lo asociamos al usuario que creamos al principio mediante el constructor (con el valor 1500L)
+        Cuando el sistema registra la nueva coleccion va a tomar la lista dentro del objeto y lee cada ID, para ubicar el ticket correspondiente
+        Una vez tiene el ticket, con ese ticket busca el evento y cuando lo identifica le resta la cantidad de asientos de ese ticket al evento
+
+        Dado que por default todos los eventos se inicializan con 1000 asientos, tenemos que obtener que le quedan 30 asientos menos, es decir, 970
+         */
+        val compraDePrueba = TicketCollection(1L, 1500L, 1, mutableListOf(1L))
+        this.repoTicketsCollection.registrarNuevaColeccion(compraDePrueba, this.repoUsuarios.obtenerListaDeIDsDeUsuarios(), this.repoTickets.obtenerListaDeIDsDeTickets())
+
+        val cantidadDeAsientosEsperada = 970
+        val cantidadDeAsientosObtenida = this.repoEventos.obtenerAsientosDisponibles(eventoPrueba.id)
+
+        assertEquals(cantidadDeAsientosEsperada, cantidadDeAsientosObtenida) // y aca cuando comparamos obtenemos que la resta fue realizada
     }
 }

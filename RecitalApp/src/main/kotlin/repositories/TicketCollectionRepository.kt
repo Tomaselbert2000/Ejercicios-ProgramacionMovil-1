@@ -8,6 +8,7 @@ object TicketCollectionRepository {
     private val repoUsuarios = UserRepository
     private val repoTickets = TicketsRepository
     private val repoMediosDePago = PaymentMethodRepository
+    private val repoEventos = EventRepository
 
     init {
 
@@ -45,10 +46,21 @@ object TicketCollectionRepository {
             return false
         }
 
-        val montoTotal = this.calcularMontoTotal(nuevaColeccion)
-        val usuarioQueRealizaLaCompra = this.repoUsuarios.buscarUsuarioPorID(nuevaColeccion.userId)
-        if (usuarioQueRealizaLaCompra != null){
-            usuarioQueRealizaLaCompra.money -= montoTotal
+        val montoTotal = this.calcularMontoTotal(nuevaColeccion) // nos guardamos el valor del monto total
+        val usuarioQueRealizaLaCompra = this.repoUsuarios.buscarUsuarioPorID(nuevaColeccion.userId) // y aca buscamos el usuario en el repo
+
+        if (usuarioQueRealizaLaCompra != null){ // validamos que el usuario no sea null
+            usuarioQueRealizaLaCompra.money -= montoTotal // le restamos del saldo la cantidad que gasto
+        }
+
+        for(ticketID in nuevaColeccion.ticketCollection){ // leemos la lista de IDs que trae la nueva coleccion
+            val ticketBuscado = this.repoTickets.obtenerTicketPorId(ticketID) // por cada uno vamos a buscar en el repo de tickets cual es el objeto con ese ID
+            val eventIdParaBuscar = ticketBuscado?.eventId // una vez tenemos el ticket, obtenemos el eventID para saber a que evento esta asociado
+            val eventoBuscado = this.repoEventos.obtenerEventoPorId(eventIdParaBuscar) // con con el eventId pasamos a buscar el objeto evento con ese ID
+
+            if (eventoBuscado != null){ // validamos que no sea null
+                ticketBuscado?.quantity?.let { eventoBuscado.cantidadDeAsientosDisponibles -= it } // y le actualizamos la cantidad de asientos segun el valor quantity del ticket
+            }
         }
 
         this.ticketCollections.add(nuevaColeccion)

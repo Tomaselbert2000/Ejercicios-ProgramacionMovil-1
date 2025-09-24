@@ -1,6 +1,5 @@
 package main.kotlin
 
-import main.kotlin.data.TicketCollection
 import main.kotlin.repositories.EventRepository
 import main.kotlin.repositories.PaymentMethodRepository
 import main.kotlin.repositories.TicketCollectionRepository

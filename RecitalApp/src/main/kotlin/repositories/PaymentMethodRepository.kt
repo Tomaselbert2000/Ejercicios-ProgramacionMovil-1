@@ -1,7 +1,5 @@
 package main.kotlin.repositories
 
-import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.date
-import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.time
 import main.kotlin.data.PaymentMethod
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -39,13 +37,13 @@ object PaymentMethodRepository {
     }
 
     fun registrarNuevoMedioDePago(nuevoMedioDePago: PaymentMethod): Boolean {
-        val precondiciones = !this.estaDuplicado(nuevoMedioDePago)
+        val precondiciones = !this.estaDuplicado(nuevoMedioDePago) // aca juntamos dentro de una sola variable todas las condiciones para crear un nuevo medio de pago
                 && !this.idRepetido(nuevoMedioDePago)
                 && !this.nombreRepetido(nuevoMedioDePago)
                 && this.idValido(nuevoMedioDePago)
                 && this.valorDeComisionValido(nuevoMedioDePago)
-        if (precondiciones){
-            this.obtenerFee(nuevoMedioDePago, LocalDate.now(), LocalTime.now())
+        if (precondiciones){ // preguntamos si se cumplen todas, es decir, que toda esa suma logica da true
+            this.obtenerFee(nuevoMedioDePago, LocalDate.now(), LocalTime.now()) // le preguntamos a la funcion cual es la comision segun el nombre del nuevo objeto, la fecha y la hora
             this.listaMediosDePago.add(nuevoMedioDePago)
             return true
         }

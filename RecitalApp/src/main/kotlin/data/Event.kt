@@ -2,6 +2,7 @@ package main.kotlin.data
 
 data class Event(
     val id: Long,
+    var cantidadDeAsientosDisponibles: Int,
     var date: String,
     val time: String,
     val location: String,
@@ -10,6 +11,6 @@ data class Event(
 )
 {
     override fun toString(): String {
-        return "ID de Evento: $id, Fecha: $date', Hora: $time', Ubicacion: $location', Artista invitado: $artist', Imagen: $image')"
+        return "Event(id=$id, cantidadDeAsientosDisponibles=$cantidadDeAsientosDisponibles, date='$date', time='$time', location='$location', artist='$artist', image='$image')"
     }
 }

@@ -13,6 +13,7 @@ object EventRepository {
         events.add(
             Event(
                 1L,
+                1000,
                 "2025-10-02",
                 "21:00",
                 "Luna Park",
@@ -24,6 +25,7 @@ object EventRepository {
         events.add(
             Event(
                 2L,
+                1000,
                 "2025-12-29",
                 "20:00",
                 "Estadio River Plate",
@@ -35,6 +37,7 @@ object EventRepository {
         events.add(
             Event(
                 3L,
+                1000,
                 "2021-7-30",
                 "22:00",
                 "Estadio Velez Sarsfield",
@@ -46,6 +49,7 @@ object EventRepository {
         events.add(
             Event(
                 4L,
+                1000,
                 "2025-11-16",
                 "20:00",
                 "Teatro Gran Rex",
@@ -57,6 +61,7 @@ object EventRepository {
         events.add(
             Event(
                 5L,
+                1000,
                 "2025-9-21",
                 "19:00",
                 "Movistar Arena",
@@ -68,6 +73,7 @@ object EventRepository {
         events.add(
             Event(
                 6L,
+                1000,
                 "2025-11-09",
                 "21:00",
                 "Hipodromo de Palermo",
@@ -79,6 +85,7 @@ object EventRepository {
         events.add(
             Event(
                 7L,
+                1000,
                 "2025-11-07",
                 "20:00",
                 "Teatro Vorterix",
@@ -90,11 +97,16 @@ object EventRepository {
 
     fun registrarNuevoEvento(evento: Event) : Boolean{
         return !this.seSuperponeAOtro(evento)
+                && this.cantidadDeAsientosValida(evento)
                 && this.esFechaValida(evento)
                 && this.esHoraValida(evento)
                 && this.validarId(evento)
                 && !this.esDuplicado(evento)
                 && this.events.add(evento)
+    }
+
+    private fun cantidadDeAsientosValida(evento: Event): Boolean {
+        return evento.cantidadDeAsientosDisponibles >= 1
     }
 
     /*
@@ -156,6 +168,15 @@ object EventRepository {
         return false
     }
 
+    fun obtenerEventoPorId(eventIdParaBuscar: Long?): Event? {
+        for (e in this.events){
+            if (e.id == eventIdParaBuscar){
+                return e
+            }
+        }
+        return null
+    }
+
     fun buscarEventoPorId(idBuscado: Long): Event? {
         for (e in this.events){
             if (e.id == idBuscado){
@@ -177,6 +198,15 @@ object EventRepository {
         return this.events
     }
 
+    fun obtenerAsientosDisponibles(id: Long): Int? {
+        for (e in this.events){
+            if (e.id == id){
+                return e.cantidadDeAsientosDisponibles
+            }
+        }
+        return null
+    }
+
     fun limpiarInstancia() { // con esta funcion restauramos el estado de la instancia acorde al template proporcionado
         events.clear()
     }
@@ -185,6 +215,7 @@ object EventRepository {
         events.add(
             Event(
                 1L,
+                1000,
                 "2025-10-02",
                 "21:00",
                 "Luna Park",
@@ -196,6 +227,7 @@ object EventRepository {
         events.add(
             Event(
                 2L,
+                1000,
                 "2025-12-29",
                 "20:00",
                 "Estadio River Plate",
@@ -207,6 +239,7 @@ object EventRepository {
         events.add(
             Event(
                 3L,
+                1000,
                 "2021-7-30",
                 "22:00",
                 "Estadio Velez Sarsfield",
@@ -218,6 +251,7 @@ object EventRepository {
         events.add(
             Event(
                 4L,
+                1000,
                 "2025-11-16",
                 "20:00",
                 "Teatro Gran Rex",
@@ -229,6 +263,7 @@ object EventRepository {
         events.add(
             Event(
                 5L,
+                1000,
                 "2025-9-21",
                 "19:00",
                 "Movistar Arena",
@@ -240,6 +275,7 @@ object EventRepository {
         events.add(
             Event(
                 6L,
+                1000,
                 "2025-11-09",
                 "21:00",
                 "Hipodromo de Palermo",
@@ -251,6 +287,7 @@ object EventRepository {
         events.add(
             Event(
                 7L,
+                1000,
                 "2025-11-07",
                 "20:00",
                 "Teatro Vorterix",
