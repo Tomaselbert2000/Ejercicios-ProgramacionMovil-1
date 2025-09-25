@@ -23,10 +23,11 @@ val repoTicketCollection : TicketCollectionRepository = TicketCollectionReposito
 fun main() {
 
     println("""
-        .=== Sistema de Gestion de eventos - Ticketek ===.
-        |       1. Iniciar sesion con credenciales.      |
-        |             2. Crear nuevo usuario.            |
-        .================================================.
+        .=== Sistema de Gestion de eventos ===.
+        | 1. Iniciar sesion con credenciales. |
+        | 2. Crear nuevo usuario.             |
+        | 3. Salir del programa.              |
+        .=====================================.
     """.trimIndent())
     var opcionDeAcceso : Int?
     do {
@@ -53,10 +54,11 @@ fun main() {
         println("=== MENÚ PRINCIPAL ===")
         println("1. Ver saldo")
         println("2. Comprar entradas")
-        println("3. Ver mis entradas")
-        println("4. Saldo total gastado.")
-        println("5. Cantidad total de tickets adquirida.")
-        println("6. Salir")
+        println("3. Ingresar saldo.")
+        println("4. Ver mis entradas")
+        println("5. Saldo total gastado.")
+        println("6. Cantidad total de tickets adquirida.")
+        println("7. Salir")
         print("Seleccione una opción: ")
         opcion = readln().toInt()
 
@@ -65,17 +67,18 @@ fun main() {
                 println("Su saldo actual es: $" + loggedUser.money)
             }
             2 -> realizarCompra(loggedUser)
-            3 -> mostrarEntradas(loggedUser)
-            4 -> mostrarTotalGastado(loggedUser)
-            5 -> mostrarTotalDeTicketsAdquiridos(loggedUser)
-            6 -> {
+            3 -> cargarSaldo(loggedUser)
+            4 -> mostrarEntradas(loggedUser)
+            5 -> mostrarTotalGastado(loggedUser)
+            6 -> mostrarTotalDeTicketsAdquiridos(loggedUser)
+            7 -> {
                 println("Saliendo del sistema...")
             }
             else -> {
                 println("Opción inválida")
             }
         }
-    } while (opcion != 6)
+    } while (opcion != 7)
 }
 
 fun crearUsuarioNuevo(): User? {
@@ -131,10 +134,21 @@ fun mostrarTotalGastado(loggedUser: User){
     println("Importante: no se incluyen comisiones por medios de pago.")
 }
 
+fun cargarSaldo(loggedUser: User) {
+    var saldoParaCargar : Double?
+    do {
+        println("Ingresar la cantidad de saldo que desea cargar: ")
+        saldoParaCargar = readln().toDouble()
+        if(saldoParaCargar <= 0.0){
+            println("El saldo ingresado no es valido. Intente nuevamente.")
+        }
+        repoUsuarios.recargarSaldoDeUsuario(loggedUser.id, saldoParaCargar)
+    }while (saldoParaCargar <= 0.0)
+}
+
 fun mostrarTotalDeTicketsAdquiridos(loggedUser: User){
     println("El usuario acumula en total: " + repoTicketCollection.obtenerTotalDeTicketsCompradosPorUserId(loggedUser.id) + " tickets")
 }
-
 
 fun mostrarEntradas(loggedUser: User) {
 

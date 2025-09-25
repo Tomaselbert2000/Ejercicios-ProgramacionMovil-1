@@ -53,6 +53,14 @@ object UserRepository {
         return false
     }
 
+    fun recargarSaldoDeUsuario(userIdParaCargar : Long, montoParaCargar : Double){
+        for (usr in users){
+            if(usr.id == userIdParaCargar){
+                usr.money += montoParaCargar
+            }
+        }
+    }
+
     fun obtenerRegistrosPorFechaDeAlta(fechaDeAlta: String): MutableList<User> {
         val listaDeUsuarios = mutableListOf<User>()
         for(user in users){
