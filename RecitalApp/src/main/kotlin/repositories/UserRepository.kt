@@ -14,14 +14,14 @@ object UserRepository {
 
     fun login(nickname: String, password: String): User? {
         for (usr in users) {
-            if (this.iniciarSesion(nickname, password)) {
+            if (this.validarCredenciales(nickname, password)) {
                 return usr
             }
         }
         return null
     }
 
-    fun iniciarSesion(nickname: String, password: String): Boolean {
+    fun validarCredenciales(nickname: String, password: String): Boolean {
         for(usr in users){
             if (usr.nickname == nickname) {
                 if (usr.password == password) {

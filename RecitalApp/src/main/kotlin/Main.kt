@@ -1,5 +1,6 @@
 package main.kotlin
 
+import main.kotlin.data.User
 import main.kotlin.repositories.EventRepository
 import main.kotlin.repositories.PaymentMethodRepository
 import main.kotlin.repositories.TicketCollectionRepository
@@ -14,24 +15,36 @@ val repoTicketCollection : TicketCollectionRepository = TicketCollectionReposito
 
 fun main() {
 
-    // Login de usuario
-    println("=== LOGIN ===")
-    print("Ingrese nickname: ")
-    val nickname = readln()
-    print("Ingrese password: ")
-    val password = readln()
+    var nickname : String?
+    var password : String?
+    var loggedUser : User? = null
+    do {
+        // Login de usuario
+        println("=== LOGIN ===")
+        print("Ingrese nickname: ")
+        nickname = readln()
+        print("Ingrese password: ")
+        password = readln()
 
-    val loggedUser = repoUsuarios.login(nickname, password)
+        if (repoUsuarios.validarCredenciales(nickname, password)) { // con la funcion del repo de usuario primero validamos las credenciales ingresadas
+            if(repoUsuarios.login(nickname, password)?.estadoDeBloqueoDeUsuario ?: false){ // por default, se espera que el bloqueo de usuario sea false, preguntamos si esta bloqueado
+                loggedUser = repoUsuarios.login(nickname, password) // si no lo esta, indica que el usuario esta habilitado para operar y continuamos
+            }
+        }else{
+            println("Usuario o contraseña incorrectos.")
+            loggedUser = null // por si el nick o la clave fallan
+        }
+        if(loggedUser?.estadoDeBloqueoDeUsuario ?: false){
+            println("Usuario bloqueado debido a demasiados intentos de inicio de sesion fallidos")
+            loggedUser = null // si se ingresara 3 veces seguidas una clave incorrecta el usuario se bloquea, de ingresar mas adelante la clave correcta el programa informa el bloqueo
+        }
+    }while(loggedUser == null)
 
-    if (loggedUser == null) {
-        println("Error: usuario o contraseña incorrectos")
-        return
-    }
 
     println("Bienvenido " + loggedUser.name + " " + loggedUser.surname)
     println("Saldo disponible: " + loggedUser.money)
 
-    var opcion = 0
+    var opcion: Int
     do {
         println()
         println("=== MENÚ PRINCIPAL ===")
