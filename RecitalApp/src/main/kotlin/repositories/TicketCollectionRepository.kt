@@ -180,6 +180,14 @@ object TicketCollectionRepository {
         return listaDeComprasDelUsuario
     }
 
+    fun obtenerListaDeIDsDeColecciones(): MutableList<Long> {
+        val listaDeIDsDeColeccionesRegistrados = mutableListOf<Long>()
+        for(item in this.ticketCollections){
+            listaDeIDsDeColeccionesRegistrados.add(item.id)
+        }
+        return listaDeIDsDeColeccionesRegistrados
+    }
+
     fun limpiarInstancia() {
         ticketCollections.clear()
     }

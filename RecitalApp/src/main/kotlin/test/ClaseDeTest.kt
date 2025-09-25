@@ -518,21 +518,23 @@ class ClaseDeTest {
     // +--- Funciones de test para la interaccion entre el usuario y el sistema ---+
 
     @Test
-    fun dadoQueExisteUnUsuarioRegistradoSiIngresoComoMARTIN_ALBANESIabc4321ObtengoTrue(){
+    fun dadoQueExisteUnUsuarioRegistradoSiIngresoComoMARTIN_ALBANESIabc4321ObtengoSuUsuario(){
         // probamos que dado un nickname y contraseña correctos, el sistema valida que existe tal usuario y retorna true
         this.repoUsuarios.reiniciarInstancia()
         val nickname = "MARTIN_ALBANESI"
         val password = "abc4321"
-        val sesionIniciada = this.repoUsuarios.validarCredenciales(nickname, password) // llamamos al metodo y le pasamos los datos aca
-        assertTrue(sesionIniciada)
+        val sesionIniciada = this.repoUsuarios.login(nickname, password) // llamamos al metodo y le pasamos los datos aca
+
+        assertEquals(nickname, sesionIniciada?.nickname)
+        assertEquals(password, sesionIniciada?.password)
     }
 
     @Test
-    fun dadoQueExisteUnRepoDeUsuariosSiIntentoIngresarConUnNicknameQueNoExisteObtengoFalse(){
+    fun dadoQueExisteUnRepoDeUsuariosSiIntentoIngresarConUnNicknameQueNoExisteObtengoNull(){
         val nicknameQueNoExiste = "qwerty"
         val passwordQueSiExiste = "abc4321"
-        val sesionIniciada = this.repoUsuarios.validarCredenciales(nicknameQueNoExiste, passwordQueSiExiste)
-        assertFalse(sesionIniciada)
+        val sesionIniciada = this.repoUsuarios.login(nicknameQueNoExiste, passwordQueSiExiste)
+        assertNull(sesionIniciada)
     }
 
     @Test
@@ -540,10 +542,10 @@ class ClaseDeTest {
         this.repoUsuarios.reiniciarInstancia()
         val nickname = "MARTIN_ALBANESI" // tenemos un nickname que funciona correctamente
         val password = "abc1234" // y aca una contraseña incorrecta para ese usuario
-        this.repoUsuarios.validarCredenciales(nickname, password) // probamos iniciar sesion con estas credenciales, esto no tiene que funcionar
+        this.repoUsuarios.login(nickname, password) // probamos iniciar sesion con estas credenciales, esto no tiene que funcionar
         val cantidadDeIntentosFallidosEsperada = 1 // esperamos que la cantidad de inicios de sesion fallidos se incremente en 1 luego de la linea anterior
-        val cantidadDeIntenosFallidosObtenida = this.repoUsuarios.buscarUsuarioPorNickname(nickname)?.obtenerCantidadIniciosSesionFallidos() // obtenemos la cantidad de intentos
-        assertEquals(cantidadDeIntentosFallidosEsperada, cantidadDeIntenosFallidosObtenida) // comparamos aca y obtenemos que efectivamente aumenta en 1 por cada inicio de sesion fallido
+        val cantidadDeIntentosFallidosObtenida = this.repoUsuarios.buscarUsuarioPorNickname(nickname)?.obtenerCantidadIniciosSesionFallidos() // obtenemos la cantidad de intentos
+        assertEquals(cantidadDeIntentosFallidosEsperada, cantidadDeIntentosFallidosObtenida) // comparamos aca y obtenemos que efectivamente aumenta en 1 por cada inicio de sesion fallido
     }
 
     @Test
@@ -551,7 +553,7 @@ class ClaseDeTest {
         this.repoUsuarios.reiniciarInstancia()
         val nickname = "MARTIN_ALBANESI"
         val password = "abc4321"
-        this.repoUsuarios.validarCredenciales(nickname, password) // pasamos el user y la password, esto genera que el usuario inicie sesion correctamente
+        this.repoUsuarios.login(nickname, password) // pasamos el user y la password, esto genera que el usuario inicie sesion correctamente
         val estadoDeSesionEsperado = true // esperamos que de iniciar sesion, el estado sea true
         val estadoDeSesionObtenido = this.repoUsuarios.buscarUsuarioPorNickname("MARTIN_ALBANESI")?.obtenerEstadoDeSesion() // preguntamos el estado al objeto
         assertEquals(estadoDeSesionEsperado, estadoDeSesionObtenido) // validamos que da true y el test funciona
@@ -564,9 +566,9 @@ class ClaseDeTest {
         val password = "abc1234" // aca tenemos una contraseña incorrecta para ese user
 
         // iniciamos sesion 3 veces seguidas con una password incorrecta
-        this.repoUsuarios.validarCredenciales(nickname, password)
-        this.repoUsuarios.validarCredenciales(nickname, password)
-        this.repoUsuarios.validarCredenciales(nickname, password)
+        this.repoUsuarios.login(nickname, password)
+        this.repoUsuarios.login(nickname, password)
+        this.repoUsuarios.login(nickname, password)
 
         // y ahora vamos a preguntarle al repo de usuarios si el user con el nickname dado esta bloqueado o no
         val estadoDeBloqueoDeUsuarioEsperado = true // esperamos que luego de 3 intentos el sistema bloquee al usuario

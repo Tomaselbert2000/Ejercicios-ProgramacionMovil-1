@@ -9,7 +9,7 @@ data class User(
     var money: Double, // dado que el usuario puede comprar y cargar saldo, este valor debe tener la posibilidad de modificarse
     val createdDate: String
 ){
-    var estadoDeBloqueoDeUsuario: Boolean = false // este valor por defecto es false, si el usuario acumula 3 intentos fallidos de sesion se bloquea
+    var usuarioBloqueado: Boolean = false // este valor por defecto es false, si el usuario acumula 3 intentos fallidos de sesion se bloquea
     var estadoDeSesion: Boolean = false // por default un usuario al registrarse en el sistema debe iniciar sesion, su estado inicial siempre es false
     var cantidadIniciosDeSesionFallidos: Int = 0 // dado que este valor debe poder incrementarse, lo declaramos como var
 
@@ -22,7 +22,7 @@ data class User(
     }
 
     fun obtenerEstadoDeBloqueoDeUsuario(): Boolean {
-        return this.estadoDeBloqueoDeUsuario
+        return this.usuarioBloqueado
     }
 
     fun obtenerSaldo(): Double {

@@ -13,29 +13,20 @@ object UserRepository {
     }
 
     fun login(nickname: String, password: String): User? {
-        for (usr in users) {
-            if (this.validarCredenciales(nickname, password)) {
-                return usr
+        val usuario = this.users.find { it.nickname == nickname}
+        if (usuario != null) {
+            if (usuario.password == password) {
+                usuario.estadoDeSesion = true
+                return usuario
+            }
+            else{
+                usuario.cantidadIniciosDeSesionFallidos ++
+                if(usuario.cantidadIniciosDeSesionFallidos >=3){
+                    usuario.usuarioBloqueado = true
+                }
             }
         }
         return null
-    }
-
-    fun validarCredenciales(nickname: String, password: String): Boolean {
-        for(usr in users){
-            if (usr.nickname == nickname) {
-                if (usr.password == password) {
-                    usr.estadoDeSesion = true
-                    return true
-                }else
-                    usr.cantidadIniciosDeSesionFallidos ++
-                    if(usr.cantidadIniciosDeSesionFallidos == 3){
-                        usr.estadoDeBloqueoDeUsuario = true
-                    }
-            }
-        }
-
-        return false
     }
 
     fun registrarNuevoUsuario(usuarioNuevo: User): Boolean{
