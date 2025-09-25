@@ -9,6 +9,8 @@ import main.kotlin.repositories.PaymentMethodRepository
 import main.kotlin.repositories.TicketCollectionRepository
 import main.kotlin.repositories.TicketsRepository
 import main.kotlin.repositories.UserRepository
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -20,6 +22,82 @@ val repoTicketCollection : TicketCollectionRepository = TicketCollectionReposito
 
 fun main() {
 
+    println("""
+        .=== Sistema de Gestion de eventos - Ticketek ===.
+        |       1. Iniciar sesion con credenciales.      |
+        |             2. Crear nuevo usuario.            |
+        .================================================.
+    """.trimIndent())
+    var opcionDeAcceso : Int?
+    do {
+        println("Seleccione un valor para continuar: ")
+        opcionDeAcceso = readln().toInt()
+        if(opcionDeAcceso !in 1 ..2){
+            println("El valor ingresado no es valido. Intente nuevamente.")
+        }
+    }while (opcionDeAcceso !in 1..2)
+
+    // creamos una variable loggedUser que dentro contenga el resultado de llamar a la funcion iniciarSesion() o en su defecto crearUsuarioNuevo()
+    val loggedUser : User = if(opcionDeAcceso == 1){
+        iniciarSesion()
+    }else{
+        crearUsuarioNuevo()!!
+    }
+
+    println("Bienvenido " + loggedUser.name + " " + loggedUser.surname)
+    println("Saldo disponible: " + loggedUser.money)
+
+    var opcion: Int
+    do {
+        println()
+        println("=== MENÚ PRINCIPAL ===")
+        println("1. Ver saldo")
+        println("2. Comprar entradas")
+        println("3. Ver mis entradas")
+        println("4. Saldo total gastado.")
+        println("5. Cantidad total de tickets adquirida.")
+        println("6. Salir")
+        print("Seleccione una opción: ")
+        opcion = readln().toInt()
+
+        when (opcion) {
+            1 -> {
+                println("Su saldo actual es: $" + loggedUser.money)
+            }
+            2 -> realizarCompra(loggedUser)
+            3 -> mostrarEntradas(loggedUser)
+            4 -> mostrarTotalGastado(loggedUser)
+            5 -> mostrarTotalDeTicketsAdquiridos(loggedUser)
+            6 -> {
+                println("Saliendo del sistema...")
+            }
+            else -> {
+                println("Opción inválida")
+            }
+        }
+    } while (opcion != 6)
+}
+
+fun crearUsuarioNuevo(): User? {
+    println(".=== Completar datos de usuario ===.")
+    println("Ingresar nombre: ")
+    val nombre = readln()
+    println("Ingresar apellido: ")
+    val apellido = readln()
+    println("Ingresar nickname: ")
+    val nickname = readln()
+    println("Ingresar contraseña de usuario: ")
+    val password = readln()
+
+    val nuevoUsuario = User(generarIDparaUsuarioAleatorio(), nickname, password, nombre, apellido, 0.0, retornarStringFechaActual())
+    return if(repoUsuarios.registrarNuevoUsuario(nuevoUsuario)){
+        nuevoUsuario
+    }else{
+        null
+    }
+}
+
+fun iniciarSesion(): User {
     var nickname : String?
     var password : String?
     var loggedUser : User?
@@ -45,41 +123,20 @@ fun main() {
             loggedUser = null // para cualquier user o clave incorrectos, limpiamos tambien el objeto
         }
     }while(loggedUser == null)
-
-
-    println("Bienvenido " + loggedUser.name + " " + loggedUser.surname)
-    println("Saldo disponible: " + loggedUser.money)
-
-    var opcion: Int
-    do {
-        println()
-        println("=== MENÚ PRINCIPAL ===")
-        println("1. Ver saldo")
-        println("2. Comprar entradas")
-        println("3. Ver mis entradas")
-        println("4. Salir")
-        print("Seleccione una opción: ")
-        opcion = readln().toInt()
-
-        when (opcion) {
-            1 -> {
-                println("Su saldo actual es: " + loggedUser.money)
-            }
-            2 -> realizarCompra(loggedUser)
-            3 -> mostrarEntradas(loggedUser)
-            4 -> {
-                println("Saliendo del sistema...")
-            }
-            else -> {
-                println("Opción inválida")
-            }
-        }
-    } while (opcion != 4)
+    return loggedUser
 }
 
-fun mostrarEntradas(loggedUser: User) {
+fun mostrarTotalGastado(loggedUser: User){
+    println("El monto acumulado para el usuario es : $" + repoTicketCollection.obtenerMontoTotalAcumuladoPorCompras(loggedUser.id))
+    println("Importante: no se incluyen comisiones por medios de pago.")
+}
 
-    println("=== MIS ENTRADAS ===")
+fun mostrarTotalDeTicketsAdquiridos(loggedUser: User){
+    println("El usuario acumula en total: " + repoTicketCollection.obtenerTotalDeTicketsCompradosPorUserId(loggedUser.id) + " tickets")
+}
+
+
+fun mostrarEntradas(loggedUser: User) {
 
     val comprasRealizadasPorElUsuario = repoTicketCollection.buscarComprasPorId(loggedUser.id)
 
@@ -89,32 +146,36 @@ fun mostrarEntradas(loggedUser: User) {
     vamos a usar esos IDs para buscar en el repositorio
      */
 
-    for(compra in comprasRealizadasPorElUsuario){ // vamos a iterar sobre cada compra
-        println("=== Historial de compras de usuario ===")
-        val listaDeIDsDeTicketsComprados = compra.ticketCollection // extraemos la lista mutable de cada una de las compras
-        for(id in listaDeIDsDeTicketsComprados){ // ahora iteramos sobre esa lista mutable, leemos los IDs de tickets guardados
-            val ticket = repoTickets.obtenerTicketPorId(id) // por cada ID obtenemos el ticket asociado desde el repositorio
+    if(comprasRealizadasPorElUsuario.isNotEmpty()){
+        println(".=== Mis entradas ===.")
+        for(compra in comprasRealizadasPorElUsuario){ // vamos a iterar sobre cada compra
+            println("=== Historial de compras de usuario ===")
+            val listaDeIDsDeTicketsComprados = compra.ticketCollection // extraemos la lista mutable de cada una de las compras
+            for(id in listaDeIDsDeTicketsComprados){ // ahora iteramos sobre esa lista mutable, leemos los IDs de tickets guardados
+                val ticket = repoTickets.obtenerTicketPorId(id) // por cada ID obtenemos el ticket asociado desde el repositorio
 
-            // imprimimos por pantalla los datos
-            println("ID de ticket: ${ticket?.id}")
-            // para los datos del evento asociado usaremos el eventId para pasarlo al repositorio de eventos y obtener los datos
-            println("Evento asociado: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.id)
-            println("Artista invitado: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.artist)
-            println("Fecha: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.date)
-            println("Hora: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.time)
-            println("Cantidad de plazas adquiridas: " + ticket?.quantity) // la cantidad de asientos ya se encuentra en el ticket
-            println("\n=======================================\n")
+                // imprimimos por pantalla los datos
+                println("ID de ticket: ${ticket?.id}")
+                // para los datos del evento asociado usaremos el eventId para pasarlo al repositorio de eventos y obtener los datos
+                println("Evento asociado: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.id)
+                println("Artista invitado: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.artist)
+                println("Fecha: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.date)
+                println("Hora: " + repoEventos.buscarEventoPorId(ticket?.eventId ?: 0L)?.time)
+                println("Cantidad de plazas adquiridas: " + ticket?.quantity) // la cantidad de asientos ya se encuentra en el ticket
+                println("\n=======================================\n")
+            }
         }
+    }else{
+        println("No se registran entradas actualmente.")
     }
 }
 
 fun realizarCompra(loggedUser: User) {
-    var medioDePagoElegido : PaymentMethod? = null
-    var ticketGenerado : Ticket? = null
-    var nuevaColeccionGenerada : TicketCollection? = null
+    var medioDePagoElegido : PaymentMethod?
+    var ticketGenerado : Ticket?
     var opcionMedio: Long
-    var eventId : Long ? = null
-    var cantidad : Int? = null
+    var eventId : Long?
+    var cantidad : Int?
 
     println("Eventos disponibles:")
     val eventos = repoEventos.obtenerListaDeEventos()
@@ -130,7 +191,7 @@ fun realizarCompra(loggedUser: User) {
         if (!listaDeIdsDeEventos.contains(eventId)){
             println("El ID ingresado no corresponde a un elemento de la lista de eventos. Intente nuevamente.")
         }
-    }while (!listaDeIdsDeEventos.contains(eventId))
+    }while (!listaDeIdsDeEventos.contains(eventId)) // verificamos que el valor ingresado corresponde a algun evento
 
 
     do {
@@ -139,19 +200,22 @@ fun realizarCompra(loggedUser: User) {
         if (cantidad <= 0){
             println("La cantidad de entradas ingresada no es valida. Intente nuevamente.")
         }
-    }while (cantidad <= 0)
+    }while (cantidad <= 0) // no podemos comprar una cantidad negativa
 
     do {
         val listaDeIdsDeMediosDePago = repoMediosDePago.obtenerListaDeIDs()
-        println("Seleccione medio de pago:")
-        println("1. Visa")
-        println("2. MasterCard")
-        println("3. MercadoPago")
+        println("=== Seleccione medio de pago ===")
+        for(pm in listaDeIdsDeMediosDePago){
+            println("\nID: " + repoMediosDePago.obtenerMedioDePagoPorId(pm)?.id +
+                    repoMediosDePago.obtenerMedioDePagoPorId(pm)?.name + ", se aplica una comision de: " +
+                    repoMediosDePago.obtenerMedioDePagoPorId(pm)?.fee?.times(100.0) + "%")
+        }
+        println("Ingresar medio de pago: ")
         opcionMedio = readln().toLong()
         if (!listaDeIdsDeMediosDePago.contains(opcionMedio)){
             println("El valor ingresado no corresponde a un medio de pago. Intente nuevamente.")
         }
-    }while(!listaDeIdsDeMediosDePago.contains(opcionMedio))
+    }while(!listaDeIdsDeMediosDePago.contains(opcionMedio)) // validamos que el ID de medio de pago existe
 
     // creamos la instancia del metodo de pago
     medioDePagoElegido = repoMediosDePago.obtenerMedioDePagoPorId(opcionMedio)
@@ -164,7 +228,8 @@ fun realizarCompra(loggedUser: User) {
 
     // luego creamos la instancia de coleccion que actua como registro de compras y enlaza al usuario con los tickets y eventos
     // tanto el ID del registro en si como el ID del nuevo ticket creado se generan de manera pseudoaleatoria
-    nuevaColeccionGenerada = TicketCollection(generarIdParaColeccionAleatorio(), loggedUser.id, medioDePagoElegido?.id ?: 1L, mutableListOf(ticketGenerado.id))
+    val nuevaColeccionGenerada =
+        TicketCollection(generarIdParaColeccionAleatorio(), loggedUser.id, medioDePagoElegido?.id ?: 1L, mutableListOf(ticketGenerado.id))
 
     // la funcion que registra las colecciones debe devolver un true o false, y en base a ese retorno mostramos un mensaje acorde en pantalla
     if(repoTicketCollection.registrarNuevaColeccion(nuevaColeccionGenerada, repoUsuarios.obtenerListaDeIDsDeUsuarios(), repoTickets.obtenerListaDeIDsDeTickets())){
@@ -190,4 +255,16 @@ fun generarIdParaColeccionAleatorio(): Long {
         return idRandom
     }
     return 0
+}
+
+fun generarIDparaUsuarioAleatorio(): Long {
+    val idRandom = Random.nextLong().absoluteValue
+    if(!repoUsuarios.obtenerListaDeIDsDeUsuarios().contains(idRandom)){
+        return idRandom
+    }
+    return 0
+}
+
+fun retornarStringFechaActual(): String {
+    return LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
 }

@@ -141,29 +141,20 @@ object TicketCollectionRepository {
         var cantidad = 0
         for(item in this.ticketCollections){
             if (item.userId == userIdQueBuscamos){
-                cantidad++
+                cantidad += item.ticketCollection.size
             }
         }
         return cantidad
     }
 
     fun obtenerMontoTotalAcumuladoPorCompras(userIdQueBuscamos: Long): Double {
-        var montoTotal = 0.0
-        for (item in this.ticketCollections){
-            if (item.userId == userIdQueBuscamos){
-                montoTotal += item.ticketCollection.size * 10000
+        var montoTotal = 0.0 // inicializamos un acumulador aca
+        for (item in this.ticketCollections){ // iteramos sobre todas las compras
+            if (item.userId == userIdQueBuscamos){ // vemos si se corresponde el userId con el que buscamos
+                montoTotal += item.ticketCollection.size * 10000 // en caso de serlo, multiplicamos el size de esa compra (la cantidad de tickets) por el precio unitario
             }
         }
         return montoTotal
-    }
-
-    fun obtenerListaDeTicketsPorId(userIdQueBuscamos: Long): MutableList<Long>? {
-        for(item in this.ticketCollections){
-            if (item.userId == userIdQueBuscamos){
-                return item.ticketCollection
-            }
-        }
-        return null
     }
 
     fun obtenerSaldoUsuarioAsociado(userIdQueBuscamos: Long, userRepo: UserRepository): Double {
